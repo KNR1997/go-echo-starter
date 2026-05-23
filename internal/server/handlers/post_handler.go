@@ -24,6 +24,20 @@ func NewPostHandlers(postService postService) *PostHandlers {
 	return &PostHandlers{postService: postService}
 }
 
+// CreatePost godoc
+//
+//	@Summary		Create a new post
+//	@Description	Create a post for authenticated user
+//	@ID				create-post
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		requests.CreatePostRequest	true	"Post data"
+//	@Success		201		{object}	responses.Data
+//	@Failure		400		{object}	responses.Error
+//	@Failure		401		{object}	responses.Error
+//	@Router			/posts [post]
 func (p *PostHandlers) CreatePost(c echo.Context) error {
 	authClaims, err := getAuthClaims(c)
 	if err != nil {
@@ -52,6 +66,17 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
 }
 
+// GetPosts godoc
+//
+//	@Summary		Get all posts
+//	@Description	Retrieve all posts from database
+//	@ID				get-posts
+//	@Tags			Posts
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200		{array}		responses.Data
+//	@Failure		404		{object}	responses.Error
+//	@Router			/posts [get]
 func (p *PostHandlers) GetPosts(c echo.Context) error {
 	posts, err := p.postService.GetPosts(c.Request().Context())
 	if err != nil {
