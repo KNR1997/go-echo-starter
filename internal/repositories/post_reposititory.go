@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"go-echo-starter/internal/models"
-	"log/slog"
 
 	"gorm.io/gorm"
 )
@@ -30,22 +29,11 @@ func (r *PostRepository) Create(ctx context.Context, post *models.Post) error {
 func (r *PostRepository) GetPosts(ctx context.Context) ([]models.Post, error) {
 	var posts []models.Post
 
-	// Log the query being executed
-	slog.Info("Executing GetPosts query")
-
 	result := r.db.WithContext(ctx).Find(&posts)
-
-	// Log the result
-	slog.Info("GetPosts result",
-		"count", result.RowsAffected,
-		"error", result.Error)
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("execute select posts query: %w", result.Error)
 	}
-
-	// Log the actual posts found
-	slog.Info("Posts found", "posts", posts)
 
 	return posts, nil
 }
