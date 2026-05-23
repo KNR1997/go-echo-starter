@@ -32,7 +32,7 @@ func NewAuthHandler(authService authService) *AuthHandler {
 //	@Summary		Authenticate a user
 //	@Description	Perform user login
 //	@ID				user-login
-//	@Tags			User Actions
+//	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			params	body		requests.LoginRequest	true	"User's credentials"
@@ -65,7 +65,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 //	@Summary		Refresh access token
 //	@Description	Perform refresh access token
 //	@ID				user-refresh
-//	@Tags			User Actions
+//	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			params	body		requests.RefreshRequest	true	"Refresh token"

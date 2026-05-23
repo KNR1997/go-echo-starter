@@ -31,7 +31,7 @@ func NewRegisterHandler(userRegisterer userRegisterer) *RegisterHandler {
 //	@Summary		Register
 //	@Description	New user registration
 //	@ID				user-register
-//	@Tags			User Actions
+//	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			params	body		requests.RegisterRequest	true	"User's email, user's password"
