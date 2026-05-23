@@ -1,7 +1,9 @@
 .PHONY: run build migrate-up migrate-down migrate-create test
+include .env
+export
 
 # Database connection string for goose
-DB_STRING := "root:yourpassword@tcp\(localhost:3306\)/myapp?parseTime=true"
+DB_STRING := root:$(DB_PASSWORD)@tcp(localhost:3306)/$(DB_NAME)?parseTime=true
 
 run:
 	air
