@@ -4,6 +4,8 @@ import (
 	"go-echo-starter/internal/server/handlers"
 	"net/http"
 
+	echoSwagger "github.com/swaggo/echo-swagger"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,18 +27,18 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	//
 	// These endpoints exist solely to keep the service running and must not include any
 	// business or processing logic.
-	// engine.GET("/swagger/*", echoSwagger.WrapHandler)
+	engine.GET("/swagger/*", echoSwagger.WrapHandler)
 	engine.GET("/health", func(c echo.Context) error {
 		return c.NoContent(http.StatusOK)
 	})
 
-	api := engine.Group("", handlers.RequestLoggerMiddleware)
+	api := engine.Group("")
 
 	// Private API routes initialization.
 	//
 	// These endpoints are used primarily for authentication/authorization and may carry sensitive data.
 	// Do NOT log request or response bodies; doing so could expose client information.
-	privateAPI := api.Group("")
+	privateAPI := api.Group("", handlers.RequestDebuggerMiddleware)
 
 	privateAPI.POST("/login", handlers.AuthHandler.Login)
 	privateAPI.POST("/register", handlers.RegisterHandler.Register)
@@ -45,10 +47,14 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	//
 	// These endpoints implement the core application logic and require authentication
 	// before they can be accessed.
-	authorizedAPI := api.Group("", handlers.RequestDebuggerMiddleware, handlers.AuthMiddleware)
+	authorizedAPI := api.Group(
+		"",
+		handlers.AuthMiddleware,
+		handlers.RequestDebuggerMiddleware,
+	)
 
 	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
-	authorizedAPI.GET("/posts", handlers.PostHandler.GetPosts)
+	privateAPI.GET("/posts", handlers.PostHandler.GetPosts)
 
 	return engine
 
