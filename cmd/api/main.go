@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-echo-starter/docs"
 	"go-echo-starter/internal/config"
 	"go-echo-starter/internal/db"
 	"go-echo-starter/internal/repositories"
@@ -27,11 +28,20 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	"github.com/swaggo/swag/example/override/docs"
 )
 
 const shutdownTimeout = 20 * time.Second
 
+// @title GO Echo Starter API
+// @version 1.0
+// @description API documentation
+// @host localhost:7788
+// @BasePath /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" [space] and then your token.
 func main() {
 	if err := run(); err != nil {
 		slog.Error("Service run error", "err", err.Error())
