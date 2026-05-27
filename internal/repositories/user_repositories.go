@@ -78,3 +78,15 @@ func (r *UserRepository) CreateUserAndOAuthProvider(ctx context.Context, user *m
 
 	return nil
 }
+
+func (r *UserRepository) GetUsers(ctx context.Context) ([]models.User, error) {
+	var users []models.User
+
+	result := r.db.WithContext(ctx).Find(&users)
+
+	if result.Error != nil {
+		return nil, fmt.Errorf("executes select users query: %w", result.Error)
+	}
+
+	return users, nil
+}

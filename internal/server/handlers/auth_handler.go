@@ -46,7 +46,12 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	}
 
 	if err := request.Validate(); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
+		return responses.ValidationErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"Validation failed",
+			responses.ParseValidationErrors(err),
+		)
 	}
 
 	response, err := h.authService.GenerateToken(c.Request().Context(), &request)

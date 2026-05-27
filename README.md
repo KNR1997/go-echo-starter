@@ -110,6 +110,14 @@ make run
 make build
 ```
 
+
+---
+
+### 9. Add swagger docs
+```base
+swag init -g cmd/api/main.go
+```
+
 ---
 
 ## Common issues

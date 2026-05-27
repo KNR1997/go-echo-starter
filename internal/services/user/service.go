@@ -17,6 +17,7 @@ type userRepository interface {
 	GetByID(ctx context.Context, id uint) (models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 	CreateUserAndOAuthProvider(ctx context.Context, user *models.User, oauthProvider *models.OAuthProviders) error
+	GetUsers(ctx context.Context) ([]models.User, error)
 }
 
 type Service struct {
@@ -39,6 +40,7 @@ func (s *Service) Register(ctx context.Context, request *requests.RegisterReques
 	user := &models.User{
 		Email:    request.Email,
 		Name:     request.Name,
+		Username: request.Username,
 		Password: string(encryptedPassword),
 	}
 
@@ -74,4 +76,13 @@ func (s *Service) CreateUserAndOAuthProvider(ctx context.Context, user *models.U
 	}
 
 	return nil
+}
+
+func (s *Service) GetUsers(ctx context.Context) ([]models.User, error) {
+	users, err := s.userRepository.GetUsers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get users from repository: %w", err)
+	}
+
+	return users, nil
 }

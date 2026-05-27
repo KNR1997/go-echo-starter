@@ -16,8 +16,27 @@ type BasicAuth struct {
 
 func (ba BasicAuth) Validate() error {
 	return validation.ValidateStruct(&ba,
-		validation.Field(&ba.Email, is.Email),
-		validation.Field(&ba.Password, validation.Length(minPathLength, 0)),
+		validation.Field(
+			&ba.Email,
+			validation.Required.Error("Email is required"),
+			is.Email.Error("Invalid email address"),
+		),
+		validation.Field(
+			&ba.Password,
+			validation.Required.Error("Password is required"),
+			validation.Length(minPathLength, 0).
+				Error("Password must be at least 8 characters"),
+		),
+		// validation.Field(
+		// 	&ba.Email,
+		// 	validation.Required,
+		// 	is.Email,
+		// ),
+		// validation.Field(
+		// 	&ba.Password,
+		// 	validation.Required,
+		// 	validation.Length(minPathLength, 0),
+		// ),
 	)
 }
 
@@ -27,7 +46,8 @@ type LoginRequest struct {
 
 type RegisterRequest struct {
 	BasicAuth
-	Name string `json:"name" validate:"required" example:"John Doe"`
+	Name     string `json:"name" validate:"required" example:"John Doe"`
+	Username string `json:"username" validate:"required" example:"johnDoe"`
 }
 
 func (rr RegisterRequest) Validate() error {
@@ -38,6 +58,7 @@ func (rr RegisterRequest) Validate() error {
 
 	return validation.ValidateStruct(&rr,
 		validation.Field(&rr.Name, validation.Required),
+		validation.Field(&rr.Username, validation.Required),
 	)
 }
 

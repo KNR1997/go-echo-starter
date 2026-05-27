@@ -12,9 +12,12 @@ import (
 	"go-echo-starter/internal/server/handlers"
 	"go-echo-starter/internal/server/middleware"
 	"go-echo-starter/internal/server/routes"
+	"go-echo-starter/internal/services/api"
 	"go-echo-starter/internal/services/auth"
+	"go-echo-starter/internal/services/dept"
 	"go-echo-starter/internal/services/oauth"
 	"go-echo-starter/internal/services/post"
+	"go-echo-starter/internal/services/role"
 	"go-echo-starter/internal/services/token"
 	"go-echo-starter/internal/services/user"
 	"go-echo-starter/internal/slogx"
@@ -73,6 +76,15 @@ func run() error {
 	userRepository := repositories.NewUserRepository(gormDB)
 	userService := user.NewService(userRepository)
 
+	roleRepository := repositories.NewRoleRepository(gormDB)
+	roleService := role.NewService(roleRepository)
+
+	deptRepository := repositories.NewDeptRepository(gormDB)
+	deptService := dept.NewService(deptRepository)
+
+	apiRepository := repositories.NewApiRepository(gormDB)
+	apiService := api.NewService(apiRepository)
+
 	postRepository := repositories.NewPostRepository(gormDB)
 	postService := post.NewService(postRepository)
 
@@ -98,16 +110,25 @@ func run() error {
 	authHandler := handlers.NewAuthHandler(authService)
 	oAuthHandler := handlers.NewOAuthHandler(oAuthService)
 	registerHandler := handlers.NewRegisterHandler(userService)
+	userHandler := handlers.NewUserHandlers(userService)
+	roleHandler := handlers.NewRoleHandlers(roleService)
+	deptHandler := handlers.NewDepartmentHandlers(deptService)
+	apiHandler := handlers.NewApiHandlers(apiService)
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.Auth.AccessSecret)
 	reguestLoggerMiddleware := middleware.NewRequestLogger(slogx.NewTraceStarter(uuid.NewV7))
 	requestDebuggerMiddleware := middleware.NewRequestDebugger()
 
 	engine := routes.ConfigureRoutes(routes.Handlers{
-		PostHandler:               postHandler,
-		AuthHandler:               authHandler,
-		OAuthHandler:              oAuthHandler,
-		RegisterHandler:           registerHandler,
+		PostHandler:        postHandler,
+		AuthHandler:        authHandler,
+		OAuthHandler:       oAuthHandler,
+		RegisterHandler:    registerHandler,
+		UserHandlers:       userHandler,
+		RoleHandlers:       roleHandler,
+		DepartmentHandlers: deptHandler,
+		ApiHandlers:        apiHandler,
+
 		AuthMiddleware:            authMiddleware,
 		RequestLoggerMiddleware:   reguestLoggerMiddleware,
 		RequestDebuggerMiddleware: requestDebuggerMiddleware,

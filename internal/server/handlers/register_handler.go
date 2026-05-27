@@ -45,7 +45,12 @@ func (h *RegisterHandler) Register(c echo.Context) error {
 	}
 
 	if err := registerRequest.Validate(); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or invalid")
+		return responses.ValidationErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"Validation failed",
+			responses.ParseValidationErrors(err),
+		)
 	}
 
 	_, err := h.userRegisterer.GetUserByEmail(c.Request().Context(), registerRequest.Email)

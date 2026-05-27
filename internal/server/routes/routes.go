@@ -4,16 +4,21 @@ import (
 	"go-echo-starter/internal/server/handlers"
 	"net/http"
 
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/labstack/echo/v4"
 )
 
 type Handlers struct {
-	PostHandler     *handlers.PostHandlers
-	AuthHandler     *handlers.AuthHandler
-	OAuthHandler    *handlers.OAuthHandler
-	RegisterHandler *handlers.RegisterHandler
+	PostHandler        *handlers.PostHandlers
+	AuthHandler        *handlers.AuthHandler
+	OAuthHandler       *handlers.OAuthHandler
+	RegisterHandler    *handlers.RegisterHandler
+	UserHandlers       *handlers.UserHandlers
+	RoleHandlers       *handlers.RoleHandlers
+	DepartmentHandlers *handlers.DepartmentHandlers
+	ApiHandlers        *handlers.ApiHandlers
 
 	AuthMiddleware            echo.MiddlewareFunc
 	RequestLoggerMiddleware   echo.MiddlewareFunc
@@ -22,6 +27,27 @@ type Handlers struct {
 
 func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	engine := echo.New()
+
+	engine.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
+		AllowOrigins: []string{
+			"http://localhost:5173",
+		},
+		AllowMethods: []string{
+			echo.GET,
+			echo.POST,
+			echo.PUT,
+			echo.DELETE,
+			echo.PATCH,
+			echo.OPTIONS,
+		},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
+		AllowCredentials: true,
+	}))
 
 	// Technical API route initialization.
 	//
@@ -53,8 +79,27 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 		handlers.RequestDebuggerMiddleware,
 	)
 
-	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
 	privateAPI.GET("/posts", handlers.PostHandler.GetPosts)
+	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
+	authorizedAPI.PUT("/posts/:id", handlers.PostHandler.UpdatePost)
+	authorizedAPI.DELETE("/posts/:id", handlers.PostHandler.DeletePost)
+
+	privateAPI.GET("/users", handlers.UserHandlers.GetUsers)
+
+	privateAPI.GET("/roles", handlers.RoleHandlers.GetRoles)
+	authorizedAPI.POST("/roles", handlers.RoleHandlers.CreateRole)
+	authorizedAPI.PUT("/roles/:id", handlers.RoleHandlers.UpdateRole)
+	authorizedAPI.DELETE("/roles/:id", handlers.RoleHandlers.DeleteRole)
+
+	privateAPI.GET("/depts", handlers.DepartmentHandlers.GetDepartments)
+	authorizedAPI.POST("/depts", handlers.DepartmentHandlers.CreateDepartment)
+	authorizedAPI.PUT("/depts/:id", handlers.DepartmentHandlers.UpdateDepartment)
+	authorizedAPI.DELETE("/depts/:id", handlers.DepartmentHandlers.DeleteDepartment)
+
+	privateAPI.GET("/apis", handlers.ApiHandlers.GetApis)
+	authorizedAPI.POST("/apis", handlers.ApiHandlers.CreateApi)
+	authorizedAPI.PUT("/apis/:id", handlers.ApiHandlers.UpdateApi)
+	authorizedAPI.DELETE("/apis/:id", handlers.ApiHandlers.DeleteApi)
 
 	return engine
 
