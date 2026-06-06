@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 
 	"gorm.io/gorm"
@@ -27,6 +28,37 @@ func (r *DeptRepository) GetDepartments(ctx context.Context) ([]models.Departmen
 	}
 
 	return departments, nil
+}
+
+func (r *DeptRepository) GetDepartmentPaginated(
+	ctx context.Context,
+	pagination domain.Pagination,
+) ([]models.Department, int64, error) {
+
+	var departments []models.Department
+	var total int64
+
+	if err := r.db.WithContext(ctx).
+		Model(&models.Department{}).
+		Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"count departments: %w",
+			err,
+		)
+	}
+
+	if err := r.db.WithContext(ctx).
+		Limit(pagination.PageSize).
+		Offset(pagination.Offset()).
+		Order("id DESC").
+		Find(&departments).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"select departments: %w",
+			err,
+		)
+	}
+
+	return departments, total, nil
 }
 
 func (r *DeptRepository) GetById(ctx context.Context, id uint) (models.Department, error) {
@@ -63,4 +95,23 @@ func (r *DeptRepository) Delete(ctx context.Context, dept *models.Department) er
 	}
 
 	return nil
+}
+
+func (r *DeptRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
+	var dept models.Department
+
+	err := r.db.WithContext(ctx).
+		Select("id").
+		Where("name = ?", name).
+		Take(&dept).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("execute exists by name query: %w", err)
+	}
+
+	return true, nil
 }

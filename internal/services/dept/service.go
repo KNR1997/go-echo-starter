@@ -10,9 +10,11 @@ import (
 type deptRepository interface {
 	GetById(ctx context.Context, id uint) (models.Department, error)
 	GetDepartments(ctx context.Context) ([]models.Department, error)
+	GetDepartmentPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Department, int64, error)
 	Create(ctx context.Context, dept *models.Department) error
 	Update(ctx context.Context, dept *models.Department) error
 	Delete(ctx context.Context, post *models.Department) error
+	ExistsByName(ctx context.Context, name string) (bool, error)
 }
 
 type Service struct {
@@ -32,7 +34,35 @@ func (s *Service) GetDepartments(ctx context.Context) ([]models.Department, erro
 	return depts, nil
 }
 
+func (s *Service) GetDepartmentPaginated(
+	ctx context.Context,
+	pagination domain.Pagination,
+) ([]models.Department, int64, error) {
+
+	depts, total, err := s.deptRepository.GetDepartmentPaginated(
+		ctx,
+		pagination,
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf(
+			"get departments from repository: %w",
+			err,
+		)
+	}
+
+	return depts, total, nil
+}
+
 func (s *Service) Create(ctx context.Context, dept *models.Department) error {
+	exists, err := s.deptRepository.ExistsByName(ctx, dept.Name)
+	if err != nil {
+		return fmt.Errorf("check department exists: %w", err)
+	}
+
+	if exists {
+		return fmt.Errorf("department name already exists")
+	}
+
 	if err := s.deptRepository.Create(ctx, dept); err != nil {
 		return fmt.Errorf("create department in repository: %w", err)
 	}
@@ -44,6 +74,17 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateDepartmentReq
 	dept, err := s.deptRepository.GetById(ctx, request.DeptID)
 	if err != nil {
 		return nil, fmt.Errorf("get stored department from repository: %w", err)
+	}
+
+	if dept.Name != request.Name {
+		exists, err := s.deptRepository.ExistsByName(ctx, request.Name)
+		if err != nil {
+			return nil, fmt.Errorf("check department exists: %w", err)
+		}
+
+		if exists {
+			return nil, fmt.Errorf("department name already exists")
+		}
 	}
 
 	dept.Name = request.Name

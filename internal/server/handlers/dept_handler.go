@@ -8,12 +8,14 @@ import (
 	"go-echo-starter/internal/responses"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
 type departmentService interface {
 	GetDepartments(ctx context.Context) ([]models.Department, error)
+	GetDepartmentPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Department, int64, error)
 	Create(ctx context.Context, department *models.Department) error
 	Update(ctx context.Context, request domain.UpdateDepartmentRequest) (*models.Department, error)
 	Delete(ctx context.Context, request domain.DeleteDepartmentRequest) error
@@ -37,6 +39,47 @@ func (h *DepartmentHandlers) GetDepartments(c echo.Context) error {
 	return responses.Response(c, http.StatusOK, response)
 }
 
+func (h *DepartmentHandlers) GetDepartmentPaginated(c echo.Context) error {
+	page := 1
+	pageSize := 5
+
+	if p := c.QueryParam("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	if ps := c.QueryParam("page_size"); ps != "" {
+		if v, err := strconv.Atoi(ps); err == nil && v > 0 {
+			pageSize = v
+		}
+	}
+
+	pagination := domain.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	departments, total, err := h.departmentService.GetDepartmentPaginated(
+		c.Request().Context(),
+		pagination,
+	)
+	if err != nil {
+		return responses.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"Failed to get departments",
+		)
+	}
+
+	return responses.Response(c, http.StatusOK, map[string]any{
+		"data":     responses.NewDeptResponse(departments),
+		"page":     page,
+		"pageSize": pageSize,
+		"total":    total,
+	})
+}
+
 func (p *DepartmentHandlers) CreateDepartment(c echo.Context) error {
 	var createRequest requests.CreateDeptRequest
 	if err := c.Bind(&createRequest); err != nil {
@@ -58,7 +101,11 @@ func (p *DepartmentHandlers) CreateDepartment(c echo.Context) error {
 	}
 
 	if err := p.departmentService.Create(c.Request().Context(), department); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create department: "+err.Error())
+		if strings.Contains(err.Error(), "already exists") {
+			return responses.ErrorResponse(c, http.StatusConflict, err.Error())
+		}
+
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create department")
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Department successfully created")
@@ -92,6 +139,10 @@ func (p *DepartmentHandlers) UpdateDepartment(c echo.Context) error {
 	}
 
 	if _, err := p.departmentService.Update(c.Request().Context(), data); err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			return responses.ErrorResponse(c, http.StatusConflict, err.Error())
+		}
+
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update department: "+err.Error())
 	}
 
