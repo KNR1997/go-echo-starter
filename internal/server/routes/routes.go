@@ -79,7 +79,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 		handlers.RequestDebuggerMiddleware,
 	)
 
-	privateAPI.GET("/posts", handlers.PostHandler.GetPosts)
+	privateAPI.GET("/posts", handlers.PostHandler.GetPostPaginated)
 	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
 	authorizedAPI.PUT("/posts/:id", handlers.PostHandler.UpdatePost)
 	authorizedAPI.DELETE("/posts/:id", handlers.PostHandler.DeletePost)
@@ -91,10 +91,10 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	authorizedAPI.PUT("/roles/:id", handlers.RoleHandlers.UpdateRole)
 	authorizedAPI.DELETE("/roles/:id", handlers.RoleHandlers.DeleteRole)
 
-	privateAPI.GET("/depts", handlers.DepartmentHandlers.GetDepartments)
-	authorizedAPI.POST("/depts", handlers.DepartmentHandlers.CreateDepartment)
-	authorizedAPI.PUT("/depts/:id", handlers.DepartmentHandlers.UpdateDepartment)
-	authorizedAPI.DELETE("/depts/:id", handlers.DepartmentHandlers.DeleteDepartment)
+	privateAPI.GET("/departments", handlers.DepartmentHandlers.GetDepartmentPaginated)
+	authorizedAPI.POST("/departments", handlers.DepartmentHandlers.CreateDepartment)
+	authorizedAPI.PUT("/departments/:id", handlers.DepartmentHandlers.UpdateDepartment)
+	authorizedAPI.DELETE("/departments/:id", handlers.DepartmentHandlers.DeleteDepartment)
 
 	privateAPI.GET("/apis", handlers.ApiHandlers.GetApis)
 	authorizedAPI.POST("/apis", handlers.ApiHandlers.CreateApi)

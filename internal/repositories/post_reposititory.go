@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 
 	"gorm.io/gorm"
@@ -36,6 +37,37 @@ func (r *PostRepository) GetPosts(ctx context.Context) ([]models.Post, error) {
 	}
 
 	return posts, nil
+}
+
+func (r *PostRepository) GetPostPaginated(
+	ctx context.Context,
+	pagination domain.Pagination,
+) ([]models.Post, int64, error) {
+
+	var posts []models.Post
+	var total int64
+
+	if err := r.db.WithContext(ctx).
+		Model(&models.Post{}).
+		Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"count posts: %w",
+			err,
+		)
+	}
+
+	if err := r.db.WithContext(ctx).
+		Limit(pagination.PageSize).
+		Offset(pagination.Offset()).
+		Order("id DESC").
+		Find(&posts).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"select posts: %w",
+			err,
+		)
+	}
+
+	return posts, total, nil
 }
 
 func (r *PostRepository) GetPost(ctx context.Context, id uint) (models.Post, error) {

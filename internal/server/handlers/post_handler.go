@@ -15,6 +15,7 @@ import (
 type postService interface {
 	Create(ctx context.Context, post *models.Post) error
 	GetPosts(ctx context.Context) ([]models.Post, error)
+	GetPostPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Post, int64, error)
 	GetPost(ctx context.Context, id uint) (models.Post, error)
 	UpdateByUser(ctx context.Context, request domain.UpdatePostRequest) (*models.Post, error)
 	DeleteByUser(ctx context.Context, request domain.DeletePostRequest) error
@@ -94,6 +95,47 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 
 	response := responses.NewPostResponse(posts)
 	return responses.Response(c, http.StatusOK, response)
+}
+
+func (p *PostHandlers) GetPostPaginated(c echo.Context) error {
+	page := 1
+	pageSize := 10
+
+	if p := c.QueryParam("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	if ps := c.QueryParam("page_size"); ps != "" {
+		if v, err := strconv.Atoi(ps); err == nil && v > 0 {
+			pageSize = v
+		}
+	}
+
+	pagination := domain.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	posts, total, err := p.postService.GetPostPaginated(
+		c.Request().Context(),
+		pagination,
+	)
+	if err != nil {
+		return responses.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"Failed to get posts",
+		)
+	}
+
+	return responses.Response(c, http.StatusOK, map[string]any{
+		"data":     responses.NewPostResponse(posts),
+		"page":     page,
+		"pageSize": pageSize,
+		"total":    total,
+	})
 }
 
 // UpdatePost godoc

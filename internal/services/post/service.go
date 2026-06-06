@@ -12,6 +12,7 @@ import (
 type postRepository interface {
 	Create(ctx context.Context, post *models.Post) error
 	GetPosts(ctx context.Context) ([]models.Post, error)
+	GetPostPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Post, int64, error)
 	GetPost(ctx context.Context, id uint) (models.Post, error)
 	Update(ctx context.Context, post *models.Post) error
 	Delete(ctx context.Context, post *models.Post) error
@@ -40,6 +41,25 @@ func (s *Service) GetPosts(ctx context.Context) ([]models.Post, error) {
 	}
 
 	return posts, nil
+}
+
+func (s *Service) GetPostPaginated(
+	ctx context.Context,
+	pagination domain.Pagination,
+) ([]models.Post, int64, error) {
+
+	posts, total, err := s.postRepository.GetPostPaginated(
+		ctx,
+		pagination,
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf(
+			"get posts from repository: %w",
+			err,
+		)
+	}
+
+	return posts, total, nil
 }
 
 func (s *Service) GetPost(ctx context.Context, id uint) (models.Post, error) {
