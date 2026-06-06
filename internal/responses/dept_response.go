@@ -3,19 +3,21 @@ package responses
 import "go-echo-starter/internal/models"
 
 type DeptResponse struct {
-	Name string `json:"name" example:"John Doe"`
-	Desc string `json:"phone" example:"0113123888"`
+	ID   uint   `json:"id" example:"1"`
+	Name string `json:"name" example:"IT"`
+	Desc string `json:"desc" example:"notes"`
 }
 
-func NewDeptResponse(roles []models.Department) *[]DeptResponse {
-	roleResponse := make([]DeptResponse, 0)
+func NewDeptResponse(departments []models.Department) *[]DeptResponse {
+	deptResponse := make([]DeptResponse, 0)
 
-	for i := range roles {
-		roleResponse = append(roleResponse, DeptResponse{
-			Name: roles[i].Name,
-			Desc: roles[i].Desc,
+	for i := range departments {
+		deptResponse = append(deptResponse, DeptResponse{
+			ID:   departments[i].ID,
+			Name: departments[i].Name,
+			Desc: departments[i].Desc,
 		})
 	}
 
-	return &roleResponse
+	return &deptResponse
 }
