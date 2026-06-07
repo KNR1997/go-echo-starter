@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 
 	"gorm.io/gorm"
@@ -27,6 +28,37 @@ func (r *RoleRepository) GetRoles(ctx context.Context) ([]models.Role, error) {
 	}
 
 	return roles, nil
+}
+
+func (r *RoleRepository) GetRolePaginated(
+	ctx context.Context,
+	pagination domain.Pagination,
+) ([]models.Role, int64, error) {
+
+	var roles []models.Role
+	var total int64
+
+	if err := r.db.WithContext(ctx).
+		Model(&models.Role{}).
+		Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"count roles: %w",
+			err,
+		)
+	}
+
+	if err := r.db.WithContext(ctx).
+		Limit(pagination.PageSize).
+		Offset(pagination.Offset()).
+		Order("id DESC").
+		Find(&roles).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"select roles: %w",
+			err,
+		)
+	}
+
+	return roles, total, nil
 }
 
 func (r *RoleRepository) GetById(ctx context.Context, id uint) (models.Role, error) {

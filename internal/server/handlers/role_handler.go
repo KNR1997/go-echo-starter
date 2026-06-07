@@ -14,6 +14,7 @@ import (
 
 type roleService interface {
 	GetRoles(ctx context.Context) ([]models.Role, error)
+	GetRolePaginated(ctx context.Context, pagination domain.Pagination) ([]models.Role, int64, error)
 	Create(ctx context.Context, role *models.Role) error
 	Update(ctx context.Context, request domain.UpdateRoleRequest) (*models.Role, error)
 	Delete(ctx context.Context, request domain.DeleteRoleRequest) error
@@ -35,6 +36,47 @@ func (h *RoleHandlers) GetRoles(c echo.Context) error {
 
 	response := responses.NewRoleResponse(roles)
 	return responses.Response(c, http.StatusOK, response)
+}
+
+func (h *RoleHandlers) GetRolePaginated(c echo.Context) error {
+	page := 1
+	pageSize := 10
+
+	if p := c.QueryParam("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	if ps := c.QueryParam("page_size"); ps != "" {
+		if v, err := strconv.Atoi(ps); err == nil && v > 0 {
+			pageSize = v
+		}
+	}
+
+	pagination := domain.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	roles, total, err := h.roleService.GetRolePaginated(
+		c.Request().Context(),
+		pagination,
+	)
+	if err != nil {
+		return responses.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"Failed to get roles",
+		)
+	}
+
+	return responses.Response(c, http.StatusOK, map[string]any{
+		"data":     responses.NewRoleResponse(roles),
+		"page":     page,
+		"pageSize": pageSize,
+		"total":    total,
+	})
 }
 
 func (p *RoleHandlers) CreateRole(c echo.Context) error {

@@ -1,9 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type Role struct {
-	gorm.Model
-	Name string `json:"name" gorm:"type:varchar(20);"`
-	Desc string `json:"desc" gorm:"type:varchar(500);"`
+	ID        uint   `gorm:"primarykey"`
+	Name      string `json:"name" gorm:"type:varchar(20);"`
+	Desc      string `json:"desc" gorm:"type:varchar(500);"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

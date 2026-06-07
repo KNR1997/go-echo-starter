@@ -10,6 +10,7 @@ import (
 type roleRepository interface {
 	GetById(ctx context.Context, id uint) (models.Role, error)
 	GetRoles(ctx context.Context) ([]models.Role, error)
+	GetRolePaginated(ctx context.Context, pagination domain.Pagination) ([]models.Role, int64, error)
 	Create(ctx context.Context, dept *models.Role) error
 	Update(ctx context.Context, dept *models.Role) error
 	Delete(ctx context.Context, post *models.Role) error
@@ -30,6 +31,25 @@ func (s *Service) GetRoles(ctx context.Context) ([]models.Role, error) {
 	}
 
 	return roles, nil
+}
+
+func (s *Service) GetRolePaginated(
+	ctx context.Context,
+	pagination domain.Pagination,
+) ([]models.Role, int64, error) {
+
+	roles, total, err := s.roleRepository.GetRolePaginated(
+		ctx,
+		pagination,
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf(
+			"get roles from repository: %w",
+			err,
+		)
+	}
+
+	return roles, total, nil
 }
 
 func (s *Service) Create(ctx context.Context, dept *models.Role) error {

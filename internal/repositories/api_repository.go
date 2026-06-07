@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 
 	"gorm.io/gorm"
@@ -27,6 +28,37 @@ func (r *ApiRepository) GetApis(ctx context.Context) ([]models.Api, error) {
 	}
 
 	return apis, nil
+}
+
+func (r *ApiRepository) GetApiPaginated(
+	ctx context.Context,
+	pagination domain.Pagination,
+) ([]models.Api, int64, error) {
+
+	var apis []models.Api
+	var total int64
+
+	if err := r.db.WithContext(ctx).
+		Model(&models.Api{}).
+		Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"count apis: %w",
+			err,
+		)
+	}
+
+	if err := r.db.WithContext(ctx).
+		Limit(pagination.PageSize).
+		Offset(pagination.Offset()).
+		Order("id DESC").
+		Find(&apis).Error; err != nil {
+		return nil, 0, fmt.Errorf(
+			"select apis: %w",
+			err,
+		)
+	}
+
+	return apis, total, nil
 }
 
 func (r *ApiRepository) GetById(ctx context.Context, id uint) (models.Api, error) {

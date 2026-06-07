@@ -19,6 +19,7 @@ type Handlers struct {
 	RoleHandlers       *handlers.RoleHandlers
 	DepartmentHandlers *handlers.DepartmentHandlers
 	ApiHandlers        *handlers.ApiHandlers
+	MenuHandlers       *handlers.MenuHandlers
 
 	AuthMiddleware            echo.MiddlewareFunc
 	RequestLoggerMiddleware   echo.MiddlewareFunc
@@ -86,7 +87,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 
 	privateAPI.GET("/users", handlers.UserHandlers.GetUsers)
 
-	privateAPI.GET("/roles", handlers.RoleHandlers.GetRoles)
+	privateAPI.GET("/roles", handlers.RoleHandlers.GetRolePaginated)
 	authorizedAPI.POST("/roles", handlers.RoleHandlers.CreateRole)
 	authorizedAPI.PUT("/roles/:id", handlers.RoleHandlers.UpdateRole)
 	authorizedAPI.DELETE("/roles/:id", handlers.RoleHandlers.DeleteRole)
@@ -96,10 +97,15 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	authorizedAPI.PUT("/departments/:id", handlers.DepartmentHandlers.UpdateDepartment)
 	authorizedAPI.DELETE("/departments/:id", handlers.DepartmentHandlers.DeleteDepartment)
 
-	privateAPI.GET("/apis", handlers.ApiHandlers.GetApis)
+	privateAPI.GET("/apis", handlers.ApiHandlers.GetApiPaginated)
 	authorizedAPI.POST("/apis", handlers.ApiHandlers.CreateApi)
 	authorizedAPI.PUT("/apis/:id", handlers.ApiHandlers.UpdateApi)
 	authorizedAPI.DELETE("/apis/:id", handlers.ApiHandlers.DeleteApi)
+
+	privateAPI.GET("/menus", handlers.MenuHandlers.GetMenuPaginated)
+	authorizedAPI.POST("/menus", handlers.MenuHandlers.CreateMenu)
+	authorizedAPI.PUT("/menus/:id", handlers.MenuHandlers.UpdateMenu)
+	authorizedAPI.DELETE("/menus/:id", handlers.MenuHandlers.DeleteMenu)
 
 	return engine
 

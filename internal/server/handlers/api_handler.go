@@ -14,6 +14,7 @@ import (
 
 type apiService interface {
 	GetApis(ctx context.Context) ([]models.Api, error)
+	GetApiPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Api, int64, error)
 	Create(ctx context.Context, api *models.Api) error
 	Update(ctx context.Context, request domain.UpdateApiRequest) (*models.Api, error)
 	Delete(ctx context.Context, request domain.DeleteApiRequest) error
@@ -28,13 +29,54 @@ func NewApiHandlers(apiService apiService) *ApiHandlers {
 }
 
 func (h *ApiHandlers) GetApis(c echo.Context) error {
-	roles, err := h.apiService.GetApis(c.Request().Context())
+	apis, err := h.apiService.GetApis(c.Request().Context())
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusNotFound, "Failed to get all roles: "+err.Error())
+		return responses.ErrorResponse(c, http.StatusNotFound, "Failed to get all apis: "+err.Error())
 	}
 
-	response := responses.NewApiResponse(roles)
+	response := responses.NewApiResponse(apis)
 	return responses.Response(c, http.StatusOK, response)
+}
+
+func (h *ApiHandlers) GetApiPaginated(c echo.Context) error {
+	page := 1
+	pageSize := 10
+
+	if p := c.QueryParam("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	if ps := c.QueryParam("page_size"); ps != "" {
+		if v, err := strconv.Atoi(ps); err == nil && v > 0 {
+			pageSize = v
+		}
+	}
+
+	pagination := domain.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	apis, total, err := h.apiService.GetApiPaginated(
+		c.Request().Context(),
+		pagination,
+	)
+	if err != nil {
+		return responses.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			"Failed to get apis",
+		)
+	}
+
+	return responses.Response(c, http.StatusOK, map[string]any{
+		"data":     responses.NewApiResponse(apis),
+		"page":     page,
+		"pageSize": pageSize,
+		"total":    total,
+	})
 }
 
 func (p *ApiHandlers) CreateApi(c echo.Context) error {
@@ -52,15 +94,15 @@ func (p *ApiHandlers) CreateApi(c echo.Context) error {
 		)
 	}
 
-	role := &models.Api{
+	api := &models.Api{
 		Path:    createRequest.Path,
 		Method:  createRequest.Method,
 		Summary: createRequest.Summary,
 		Tags:    createRequest.Tags,
 	}
 
-	if err := p.apiService.Create(c.Request().Context(), role); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create role: "+err.Error())
+	if err := p.apiService.Create(c.Request().Context(), api); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create api: "+err.Error())
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Api successfully created")
@@ -68,9 +110,9 @@ func (p *ApiHandlers) CreateApi(c echo.Context) error {
 
 func (p *ApiHandlers) UpdateApi(c echo.Context) error {
 	idParam := c.Param("id")
-	roleID, err := strconv.Atoi(idParam)
+	apiID, err := strconv.Atoi(idParam)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid role ID")
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid api ID")
 	}
 
 	var updateRequest requests.UpdateApiRequest
@@ -88,7 +130,7 @@ func (p *ApiHandlers) UpdateApi(c echo.Context) error {
 	}
 
 	data := domain.UpdateApiRequest{
-		ApiID:   uint(roleID),
+		ApiID:   uint(apiID),
 		Path:    updateRequest.Path,
 		Method:  updateRequest.Method,
 		Summary: updateRequest.Summary,
@@ -96,7 +138,7 @@ func (p *ApiHandlers) UpdateApi(c echo.Context) error {
 	}
 
 	if _, err := p.apiService.Update(c.Request().Context(), data); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update role: "+err.Error())
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update api: "+err.Error())
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Api successfully updated")
@@ -104,17 +146,17 @@ func (p *ApiHandlers) UpdateApi(c echo.Context) error {
 
 func (p *ApiHandlers) DeleteApi(c echo.Context) error {
 	idParam := c.Param("id")
-	roleID, err := strconv.Atoi(idParam)
+	apiID, err := strconv.Atoi(idParam)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid role ID")
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid api ID")
 	}
 
 	data := domain.DeleteApiRequest{
-		ApiID: uint(roleID),
+		ApiID: uint(apiID),
 	}
 
 	if err := p.apiService.Delete(c.Request().Context(), data); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to delete role: "+err.Error())
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to delete api: "+err.Error())
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Api successfully deleted")

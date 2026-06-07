@@ -15,6 +15,7 @@ import (
 	"go-echo-starter/internal/services/api"
 	"go-echo-starter/internal/services/auth"
 	"go-echo-starter/internal/services/dept"
+	"go-echo-starter/internal/services/menu"
 	"go-echo-starter/internal/services/oauth"
 	"go-echo-starter/internal/services/post"
 	"go-echo-starter/internal/services/role"
@@ -88,6 +89,9 @@ func run() error {
 	postRepository := repositories.NewPostRepository(gormDB)
 	postService := post.NewService(postRepository)
 
+	menuRepository := repositories.NewMenuRepository(gormDB)
+	menuService := menu.NewService(menuRepository)
+
 	provider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
 		return fmt.Errorf("oidc.NewProvider: %w", err)
@@ -114,6 +118,7 @@ func run() error {
 	roleHandler := handlers.NewRoleHandlers(roleService)
 	deptHandler := handlers.NewDepartmentHandlers(deptService)
 	apiHandler := handlers.NewApiHandlers(apiService)
+	menuHandler := handlers.NewMenuHandlers(menuService)
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.Auth.AccessSecret)
 	reguestLoggerMiddleware := middleware.NewRequestLogger(slogx.NewTraceStarter(uuid.NewV7))
@@ -128,6 +133,7 @@ func run() error {
 		RoleHandlers:       roleHandler,
 		DepartmentHandlers: deptHandler,
 		ApiHandlers:        apiHandler,
+		MenuHandlers:       menuHandler,
 
 		AuthMiddleware:            authMiddleware,
 		RequestLoggerMiddleware:   reguestLoggerMiddleware,

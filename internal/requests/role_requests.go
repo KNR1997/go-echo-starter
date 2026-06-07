@@ -10,7 +10,7 @@ type BasicRole struct {
 func (bp BasicRole) Validate() error {
 	return validation.ValidateStruct(&bp,
 		validation.Field(&bp.Name, validation.Required),
-		validation.Field(&bp.Desc, validation.Required),
+		// validation.Field(&bp.Desc, validation.Required),
 	)
 }
 
