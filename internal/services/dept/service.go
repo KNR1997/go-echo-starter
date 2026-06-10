@@ -5,12 +5,18 @@ import (
 	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
+	"go-echo-starter/internal/utils"
 )
 
 type deptRepository interface {
 	GetById(ctx context.Context, id uint) (models.Department, error)
 	GetDepartments(ctx context.Context) ([]models.Department, error)
-	GetDepartmentPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Department, int64, error)
+	GetDepartmentPaginated(
+		ctx context.Context,
+		pagination domain.Pagination,
+		searchConditions []utils.SearchCondition,
+		searchJoin string,
+	) ([]models.Department, int64, error)
 	Create(ctx context.Context, dept *models.Department) error
 	Update(ctx context.Context, dept *models.Department) error
 	Delete(ctx context.Context, post *models.Department) error
@@ -37,11 +43,15 @@ func (s *Service) GetDepartments(ctx context.Context) ([]models.Department, erro
 func (s *Service) GetDepartmentPaginated(
 	ctx context.Context,
 	pagination domain.Pagination,
+	searchConditions []utils.SearchCondition,
+	searchJoin string,
 ) ([]models.Department, int64, error) {
 
 	depts, total, err := s.deptRepository.GetDepartmentPaginated(
 		ctx,
 		pagination,
+		searchConditions,
+		searchJoin,
 	)
 	if err != nil {
 		return nil, 0, fmt.Errorf(

@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/requests"
 	"go-echo-starter/internal/responses"
+	"go-echo-starter/internal/utils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,7 +17,12 @@ import (
 
 type departmentService interface {
 	GetDepartments(ctx context.Context) ([]models.Department, error)
-	GetDepartmentPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Department, int64, error)
+	GetDepartmentPaginated(
+		ctx context.Context,
+		pagination domain.Pagination,
+		searchConditions []utils.SearchCondition,
+		searchJoin string,
+	) ([]models.Department, int64, error)
 	Create(ctx context.Context, department *models.Department) error
 	Update(ctx context.Context, request domain.UpdateDepartmentRequest) (*models.Department, error)
 	Delete(ctx context.Context, request domain.DeleteDepartmentRequest) error
@@ -39,7 +46,9 @@ func (h *DepartmentHandlers) GetDepartments(c echo.Context) error {
 	return responses.Response(c, http.StatusOK, response)
 }
 
+// handlers/department_handler.go
 func (h *DepartmentHandlers) GetDepartmentPaginated(c echo.Context) error {
+	// Parse pagination
 	page := 1
 	pageSize := 5
 
@@ -55,6 +64,32 @@ func (h *DepartmentHandlers) GetDepartmentPaginated(c echo.Context) error {
 		}
 	}
 
+	// Parse search parameters
+	searchConditions, err := utils.ParseSearchQuery(c.QueryParam("search"))
+	if err != nil {
+		return responses.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			fmt.Sprintf("Invalid search format: %v", err),
+		)
+	}
+
+	// Parse search join (default to "and")
+	searchJoin := c.QueryParam("searchJoin")
+	if searchJoin == "" {
+		searchJoin = "and"
+	}
+
+	// Convert to lowercase for consistency
+	searchJoin = strings.ToLower(searchJoin)
+	if searchJoin != "and" && searchJoin != "or" {
+		return responses.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"searchJoin must be 'and' or 'or'",
+		)
+	}
+
 	pagination := domain.Pagination{
 		Page:     page,
 		PageSize: pageSize,
@@ -63,6 +98,8 @@ func (h *DepartmentHandlers) GetDepartmentPaginated(c echo.Context) error {
 	departments, total, err := h.departmentService.GetDepartmentPaginated(
 		c.Request().Context(),
 		pagination,
+		searchConditions,
+		searchJoin,
 	)
 	if err != nil {
 		return responses.ErrorResponse(
