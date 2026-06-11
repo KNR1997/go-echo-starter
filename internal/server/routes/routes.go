@@ -85,7 +85,10 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	authorizedAPI.PUT("/posts/:id", handlers.PostHandler.UpdatePost)
 	authorizedAPI.DELETE("/posts/:id", handlers.PostHandler.DeletePost)
 
-	privateAPI.GET("/users", handlers.UserHandlers.GetUsers)
+	privateAPI.GET("/users", handlers.UserHandlers.GetUserPaginated)
+	authorizedAPI.POST("/users", handlers.UserHandlers.CreateUser)
+	authorizedAPI.PUT("/users/:id", handlers.UserHandlers.UpdateUser)
+	authorizedAPI.DELETE("/users/:id", handlers.UserHandlers.DeleteUser)
 
 	privateAPI.GET("/roles", handlers.RoleHandlers.GetRolePaginated)
 	authorizedAPI.POST("/roles", handlers.RoleHandlers.CreateRole)

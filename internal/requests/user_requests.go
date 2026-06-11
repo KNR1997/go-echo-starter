@@ -75,3 +75,45 @@ func (oar OAuthRequest) Validate() error {
 type RefreshRequest struct {
 	Token string `json:"token" validate:"required" example:"refresh_token"`
 }
+
+type CreateUserRequest struct {
+	// Name        string `json:"name" validate:"required" example:"John Doe"`
+	Username    string `json:"username" validate:"required" example:"johnDoe"`
+	Email       string `json:"email" validate:"required" example:"john.doe@example.com"`
+	Password    string `json:"password" validate:"required" example:"123456"`
+	IsSuperUser bool   `json:"is_superuser" example:"false"`
+	IsActive    bool   `json:"is_active" example:"true"`
+	RoleIds     []int  `json:"role_ids" validate:"required" example:"[1]"`
+	DeptId      int    `json:"dept_id" validate:"required" example:"1"`
+}
+
+func (createUserRequest CreateUserRequest) Validate() error {
+	return validation.ValidateStruct(&createUserRequest,
+		// validation.Field(&createUserRequest.Name, validation.Required),
+		validation.Field(&createUserRequest.Username, validation.Required),
+		validation.Field(&createUserRequest.Email, validation.Required),
+		validation.Field(&createUserRequest.Password, validation.Required),
+		// validation.Field(&createUserRequest.IsSuperUser, validation.Required),
+		// validation.Field(&createUserRequest.IsActive, validation.Required),
+		validation.Field(&createUserRequest.RoleIds, validation.Required),
+		validation.Field(&createUserRequest.DeptId, validation.Required),
+	)
+}
+
+type UpdateUserRequest struct {
+	Username    string `json:"username" validate:"required" example:"johnDoe"`
+	Email       string `json:"email" validate:"required" example:"john.doe@example.com"`
+	IsSuperUser bool   `json:"is_superuser" example:"false"`
+	IsActive    bool   `json:"is_active" example:"true"`
+	RoleIds     []int  `json:"role_ids" validate:"required" example:"[1]"`
+	DeptId      int    `json:"dept_id" validate:"required" example:"1"`
+}
+
+func (request UpdateUserRequest) Validate() error {
+	return validation.ValidateStruct(&request,
+		validation.Field(&request.Username, validation.Required),
+		validation.Field(&request.Email, validation.Required),
+		// validation.Field(&request.RoleIds, validation.Required),
+		// validation.Field(&request.DeptId, validation.Required),
+	)
+}
