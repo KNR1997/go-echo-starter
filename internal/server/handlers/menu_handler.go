@@ -17,6 +17,7 @@ type menuService interface {
 	GetMenuPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Menu, int64, error)
 	Create(ctx context.Context, menu *models.Menu) error
 	Update(ctx context.Context, request domain.UpdateMenuRequest) (*models.Menu, error)
+	Patch(ctx context.Context, request domain.PatchMenuRequest) (*models.Menu, error)
 	Delete(ctx context.Context, request domain.DeleteMenuRequest) error
 }
 
@@ -72,7 +73,7 @@ func (h *MenuHandlers) GetMenuPaginated(c echo.Context) error {
 	}
 
 	return responses.Response(c, http.StatusOK, map[string]any{
-		"data":     responses.NewMenuResponse(menus),
+		"data":     responses.NewMenuTreeResponseOptimized(menus),
 		"page":     page,
 		"pageSize": pageSize,
 		"total":    total,
@@ -95,7 +96,17 @@ func (p *MenuHandlers) CreateMenu(c echo.Context) error {
 	}
 
 	menu := &models.Menu{
-		Name: createRequest.Name,
+		Name:      createRequest.Name,
+		Remark:    createRequest.Remark,
+		MenuType:  createRequest.MenuType,
+		Icon:      createRequest.Icon,
+		Path:      createRequest.Path,
+		Order:     createRequest.Order,
+		ParentID:  createRequest.ParentID,
+		IsHidden:  createRequest.IsHidden,
+		Component: createRequest.Component,
+		Keepalive: createRequest.Keepalive,
+		Redirect:  createRequest.Redirect,
 	}
 
 	if err := p.menuService.Create(c.Request().Context(), menu); err != nil {
@@ -127,11 +138,46 @@ func (p *MenuHandlers) UpdateMenu(c echo.Context) error {
 	}
 
 	data := domain.UpdateMenuRequest{
-		MenuID: uint(menuID),
-		Name:   updateRequest.Name,
+		MenuID:    uint(menuID),
+		Name:      updateRequest.Name,
+		Remark:    updateRequest.Remark,
+		MenuType:  updateRequest.MenuType,
+		Icon:      updateRequest.Icon,
+		Path:      updateRequest.Path,
+		Order:     updateRequest.Order,
+		ParentID:  updateRequest.ParentID,
+		IsHidden:  updateRequest.IsHidden,
+		Component: updateRequest.Component,
+		Keepalive: updateRequest.Keepalive,
+		Redirect:  updateRequest.Redirect,
 	}
 
 	if _, err := p.menuService.Update(c.Request().Context(), data); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update menu: "+err.Error())
+	}
+
+	return responses.MessageResponse(c, http.StatusCreated, "Menu successfully updated")
+}
+
+func (p *MenuHandlers) PatchMenu(c echo.Context) error {
+	idParam := c.Param("id")
+	menuID, err := strconv.Atoi(idParam)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid menu ID")
+	}
+
+	var updateRequest requests.PatchMenuRequest
+	if err := c.Bind(&updateRequest); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
+	}
+
+	data := domain.PatchMenuRequest{
+		MenuID:    uint(menuID),
+		IsHidden:  updateRequest.IsHidden,
+		Keepalive: updateRequest.Keepalive,
+	}
+
+	if _, err := p.menuService.Patch(c.Request().Context(), data); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update menu: "+err.Error())
 	}
 

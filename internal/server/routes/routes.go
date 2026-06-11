@@ -108,6 +108,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	privateAPI.GET("/menus", handlers.MenuHandlers.GetMenuPaginated)
 	authorizedAPI.POST("/menus", handlers.MenuHandlers.CreateMenu)
 	authorizedAPI.PUT("/menus/:id", handlers.MenuHandlers.UpdateMenu)
+	authorizedAPI.PATCH("/menus/:id", handlers.MenuHandlers.PatchMenu)
 	authorizedAPI.DELETE("/menus/:id", handlers.MenuHandlers.DeleteMenu)
 
 	return engine

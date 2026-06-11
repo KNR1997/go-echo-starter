@@ -67,6 +67,35 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateMenuRequest) 
 	}
 
 	menu.Name = request.Name
+	menu.MenuType = request.MenuType
+	menu.Icon = request.Icon
+	menu.Path = request.Path
+	menu.Order = request.Order
+	menu.ParentID = request.ParentID
+	menu.IsHidden = request.IsHidden
+	menu.Component = request.Component
+	menu.Keepalive = request.Keepalive
+	menu.Redirect = request.Redirect
+
+	if err := s.menuRepository.Update(ctx, &menu); err != nil {
+		return nil, fmt.Errorf("update Menu in repository: %w", err)
+	}
+
+	return &menu, nil
+}
+
+func (s *Service) Patch(ctx context.Context, request domain.PatchMenuRequest) (*models.Menu, error) {
+	menu, err := s.menuRepository.GetById(ctx, request.MenuID)
+	if err != nil {
+		return nil, fmt.Errorf("get stored Menu from repository: %w", err)
+	}
+
+	if request.IsHidden != nil {
+		menu.IsHidden = *request.IsHidden
+	}
+	if request.Keepalive != nil {
+		menu.Keepalive = *request.Keepalive
+	}
 
 	if err := s.menuRepository.Update(ctx, &menu); err != nil {
 		return nil, fmt.Errorf("update Menu in repository: %w", err)

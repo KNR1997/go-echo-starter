@@ -25,7 +25,7 @@ func (bm BasicMenu) Validate() error {
 		validation.Field(&bm.Path, validation.Required, validation.Length(1, 100)),
 		validation.Field(&bm.Order, validation.Min(0)),
 		validation.Field(&bm.ParentID, validation.Min(0)),
-		validation.Field(&bm.Component, validation.Required, validation.Length(1, 100)),
+		// validation.Field(&bm.Component, validation.Required, validation.Length(1, 100)),
 		validation.Field(&bm.Icon, validation.Length(0, 100)),
 		validation.Field(&bm.Redirect, validation.Length(0, 100)),
 	)
@@ -37,4 +37,9 @@ type CreateMenuRequest struct {
 
 type UpdateMenuRequest struct {
 	BasicMenu
+}
+
+type PatchMenuRequest struct {
+	IsHidden  *bool `json:"is_hidden" example:"false"`
+	Keepalive *bool `json:"keepalive" example:"true"`
 }
