@@ -2,19 +2,27 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/requests"
 	"go-echo-starter/internal/responses"
+	"go-echo-starter/internal/utils"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
 type apiService interface {
 	GetApis(ctx context.Context) ([]models.Api, error)
-	GetApiPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Api, int64, error)
+	GetApiPaginated(
+		ctx context.Context,
+		pagination domain.Pagination,
+		searchConditions []utils.SearchCondition,
+		searchJoin string,
+	) ([]models.Api, int64, error)
 	Create(ctx context.Context, api *models.Api) error
 	Update(ctx context.Context, request domain.UpdateApiRequest) (*models.Api, error)
 	Delete(ctx context.Context, request domain.DeleteApiRequest) error
@@ -54,6 +62,32 @@ func (h *ApiHandlers) GetApiPaginated(c echo.Context) error {
 		}
 	}
 
+	// Parse search parameters
+	searchConditions, err := utils.ParseSearchQuery(c.QueryParam("search"))
+	if err != nil {
+		return responses.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			fmt.Sprintf("Invalid search format: %v", err),
+		)
+	}
+
+	// Parse search join (default to "and")
+	searchJoin := c.QueryParam("searchJoin")
+	if searchJoin == "" {
+		searchJoin = "and"
+	}
+
+	// Convert to lowercase for consistency
+	searchJoin = strings.ToLower(searchJoin)
+	if searchJoin != "and" && searchJoin != "or" {
+		return responses.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"searchJoin must be 'and' or 'or'",
+		)
+	}
+
 	pagination := domain.Pagination{
 		Page:     page,
 		PageSize: pageSize,
@@ -62,6 +96,8 @@ func (h *ApiHandlers) GetApiPaginated(c echo.Context) error {
 	apis, total, err := h.apiService.GetApiPaginated(
 		c.Request().Context(),
 		pagination,
+		searchConditions,
+		searchJoin,
 	)
 	if err != nil {
 		return responses.ErrorResponse(

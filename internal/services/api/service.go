@@ -5,11 +5,17 @@ import (
 	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
+	"go-echo-starter/internal/utils"
 )
 
 type apiRepository interface {
 	GetApis(ctx context.Context) ([]models.Api, error)
-	GetApiPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Api, int64, error)
+	GetApiPaginated(
+		ctx context.Context,
+		pagination domain.Pagination,
+		searchConditions []utils.SearchCondition,
+		searchJoin string,
+	) ([]models.Api, int64, error)
 	GetById(ctx context.Context, id uint) (models.Api, error)
 	Create(ctx context.Context, dept *models.Api) error
 	Update(ctx context.Context, dept *models.Api) error
@@ -36,11 +42,15 @@ func (s *Service) GetApis(ctx context.Context) ([]models.Api, error) {
 func (s *Service) GetApiPaginated(
 	ctx context.Context,
 	pagination domain.Pagination,
+	searchConditions []utils.SearchCondition,
+	searchJoin string,
 ) ([]models.Api, int64, error) {
 
 	apis, total, err := s.apiRepository.GetApiPaginated(
 		ctx,
 		pagination,
+		searchConditions,
+		searchJoin,
 	)
 	if err != nil {
 		return nil, 0, fmt.Errorf(
