@@ -20,7 +20,7 @@ func ParseSearchQuery(searchParam string) ([]SearchCondition, error) {
 	var conditions []SearchCondition
 
 	// Split by comma for multiple conditions (if no searchJoin param)
-	parts := strings.Split(searchParam, ",")
+	parts := strings.Split(searchParam, ";")
 
 	for _, part := range parts {
 		// Split by colon to separate field and value
