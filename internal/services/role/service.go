@@ -5,12 +5,18 @@ import (
 	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
+	"go-echo-starter/internal/utils"
 )
 
 type roleRepository interface {
 	GetById(ctx context.Context, id uint) (models.Role, error)
 	GetRoles(ctx context.Context) ([]models.Role, error)
-	GetRolePaginated(ctx context.Context, pagination domain.Pagination) ([]models.Role, int64, error)
+	GetRolePaginated(
+		ctx context.Context,
+		pagination domain.Pagination,
+		searchConditions []utils.SearchCondition,
+		searchJoin string,
+	) ([]models.Role, int64, error)
 	Create(ctx context.Context, dept *models.Role) error
 	Update(ctx context.Context, dept *models.Role) error
 	Delete(ctx context.Context, post *models.Role) error
@@ -36,11 +42,15 @@ func (s *Service) GetRoles(ctx context.Context) ([]models.Role, error) {
 func (s *Service) GetRolePaginated(
 	ctx context.Context,
 	pagination domain.Pagination,
+	searchConditions []utils.SearchCondition,
+	searchJoin string,
 ) ([]models.Role, int64, error) {
 
 	roles, total, err := s.roleRepository.GetRolePaginated(
 		ctx,
 		pagination,
+		searchConditions,
+		searchJoin,
 	)
 	if err != nil {
 		return nil, 0, fmt.Errorf(

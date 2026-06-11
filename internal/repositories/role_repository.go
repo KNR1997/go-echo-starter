@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
+	"go-echo-starter/internal/utils"
 
 	"gorm.io/gorm"
 )
@@ -33,32 +34,106 @@ func (r *RoleRepository) GetRoles(ctx context.Context) ([]models.Role, error) {
 func (r *RoleRepository) GetRolePaginated(
 	ctx context.Context,
 	pagination domain.Pagination,
+	searchConditions []utils.SearchCondition,
+	searchJoin string,
 ) ([]models.Role, int64, error) {
 
 	var roles []models.Role
 	var total int64
 
-	if err := r.db.WithContext(ctx).
-		Model(&models.Role{}).
-		Count(&total).Error; err != nil {
-		return nil, 0, fmt.Errorf(
-			"count roles: %w",
-			err,
-		)
+	// Build the base query
+	query := r.db.WithContext(ctx).Model(&models.Role{})
+
+	// Apply search conditions if any
+	if len(searchConditions) > 0 {
+		query = r.applySearchConditions(query, searchConditions, searchJoin)
 	}
 
-	if err := r.db.WithContext(ctx).
+	// Get total count
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf("count roles: %w", err)
+	}
+
+	// Apply pagination and get results
+	if err := query.
 		Limit(pagination.PageSize).
 		Offset(pagination.Offset()).
 		Order("id DESC").
 		Find(&roles).Error; err != nil {
-		return nil, 0, fmt.Errorf(
-			"select roles: %w",
-			err,
-		)
+		return nil, 0, fmt.Errorf("select roles: %w", err)
 	}
 
+	// if err := r.db.WithContext(ctx).
+	// 	Model(&models.Role{}).
+	// 	Count(&total).Error; err != nil {
+	// 	return nil, 0, fmt.Errorf(
+	// 		"count roles: %w",
+	// 		err,
+	// 	)
+	// }
+
+	// if err := r.db.WithContext(ctx).
+	// 	Limit(pagination.PageSize).
+	// 	Offset(pagination.Offset()).
+	// 	Order("id DESC").
+	// 	Find(&roles).Error; err != nil {
+	// 	return nil, 0, fmt.Errorf(
+	// 		"select roles: %w",
+	// 		err,
+	// 	)
+	// }
+
 	return roles, total, nil
+}
+
+func (r *RoleRepository) applySearchConditions(
+	query *gorm.DB,
+	conditions []utils.SearchCondition,
+	joinOperator string,
+) *gorm.DB {
+	// Create a new query with the conditions
+	for i, condition := range conditions {
+		// Validate field to prevent SQL injection
+		// Only allow specific fields that exist in the department table
+		validFields := map[string]bool{
+			"name": true,
+			// Add other valid fields as needed
+		}
+
+		if !validFields[condition.Field] {
+			// Skip invalid fields or handle error
+			continue
+		}
+
+		// Build the condition
+		var conditionExpr string
+		var conditionValue interface{}
+
+		switch condition.Operator {
+		case "LIKE":
+			conditionExpr = fmt.Sprintf("%s LIKE ?", condition.Field)
+			conditionValue = fmt.Sprintf("%%%s%%", condition.Value)
+		case "EQ":
+			conditionExpr = fmt.Sprintf("%s = ?", condition.Field)
+			conditionValue = condition.Value
+		default:
+			conditionExpr = fmt.Sprintf("%s LIKE ?", condition.Field)
+			conditionValue = fmt.Sprintf("%%%s%%", condition.Value)
+		}
+
+		// Apply the condition with the appropriate join operator
+		if i == 0 {
+			query = query.Where(conditionExpr, conditionValue)
+		} else {
+			if joinOperator == "or" {
+				query = query.Or(conditionExpr, conditionValue)
+			} else {
+				query = query.Where(conditionExpr, conditionValue)
+			}
+		}
+	}
+
+	return query
 }
 
 func (r *RoleRepository) GetById(ctx context.Context, id uint) (models.Role, error) {
