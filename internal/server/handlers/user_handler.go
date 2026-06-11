@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/requests"
 	"go-echo-starter/internal/responses"
+	"go-echo-starter/internal/utils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,7 +19,13 @@ type userService interface {
 	GetUsers(ctx context.Context) ([]models.User, error)
 	Create(ctx context.Context, request *requests.CreateUserRequest) error
 	Update(ctx context.Context, request domain.UpdateUserRequest) (*models.User, error)
-	GetUserPaginated(ctx context.Context, pagination domain.Pagination) ([]models.User, int64, error)
+	GetUserPaginated(
+		ctx context.Context,
+		pagination domain.Pagination,
+		searchConditions []utils.SearchCondition,
+		searchJoin string,
+		deptId int,
+	) ([]models.User, int64, error)
 	Delete(ctx context.Context, request domain.DeleteUserRequest) error
 }
 
@@ -66,6 +74,34 @@ func (h *UserHandlers) GetUserPaginated(c echo.Context) error {
 		}
 	}
 
+	deptId, err := strconv.Atoi(c.QueryParam("dept_id"))
+
+	// Parse search parameters
+	searchConditions, err := utils.ParseSearchQuery(c.QueryParam("search"))
+	if err != nil {
+		return responses.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			fmt.Sprintf("Invalid search format: %v", err),
+		)
+	}
+
+	// Parse search join (default to "and")
+	searchJoin := c.QueryParam("searchJoin")
+	if searchJoin == "" {
+		searchJoin = "and"
+	}
+
+	// Convert to lowercase for consistency
+	searchJoin = strings.ToLower(searchJoin)
+	if searchJoin != "and" && searchJoin != "or" {
+		return responses.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"searchJoin must be 'and' or 'or'",
+		)
+	}
+
 	pagination := domain.Pagination{
 		Page:     page,
 		PageSize: pageSize,
@@ -74,6 +110,9 @@ func (h *UserHandlers) GetUserPaginated(c echo.Context) error {
 	users, total, err := h.userService.GetUserPaginated(
 		c.Request().Context(),
 		pagination,
+		searchConditions,
+		searchJoin,
+		deptId,
 	)
 	if err != nil {
 		return responses.ErrorResponse(

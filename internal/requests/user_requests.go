@@ -95,8 +95,8 @@ func (createUserRequest CreateUserRequest) Validate() error {
 		validation.Field(&createUserRequest.Password, validation.Required),
 		// validation.Field(&createUserRequest.IsSuperUser, validation.Required),
 		// validation.Field(&createUserRequest.IsActive, validation.Required),
-		validation.Field(&createUserRequest.RoleIds, validation.Required),
-		validation.Field(&createUserRequest.DeptId, validation.Required),
+		// validation.Field(&createUserRequest.RoleIds, validation.Required),
+		// validation.Field(&createUserRequest.DeptId, validation.Required),
 	)
 }
 

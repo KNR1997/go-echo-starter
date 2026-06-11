@@ -8,6 +8,7 @@ import (
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/requests"
+	"go-echo-starter/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,7 +25,13 @@ type userRepository interface {
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	ExistsByUsername(ctx context.Context, username string) (bool, error)
 	AssignRoles(ctx context.Context, userID uint, roleIDs []int) error
-	GetUserPaginated(ctx context.Context, pagination domain.Pagination) ([]models.User, int64, error)
+	GetUserPaginated(
+		ctx context.Context,
+		pagination domain.Pagination,
+		searchConditions []utils.SearchCondition,
+		searchJoin string,
+		deptId int,
+	) ([]models.User, int64, error)
 	Delete(ctx context.Context, post *models.User) error
 	GetUserRoles(ctx context.Context, userID uint) ([]models.Role, error)
 	RemoveRoles(ctx context.Context, userID uint, rolesToRemove []int) error
@@ -101,11 +108,17 @@ func (s *Service) GetUsers(ctx context.Context) ([]models.User, error) {
 func (s *Service) GetUserPaginated(
 	ctx context.Context,
 	pagination domain.Pagination,
+	searchConditions []utils.SearchCondition,
+	searchJoin string,
+	deptId int,
 ) ([]models.User, int64, error) {
 
 	users, total, err := s.userRepository.GetUserPaginated(
 		ctx,
 		pagination,
+		searchConditions,
+		searchJoin,
+		deptId,
 	)
 	if err != nil {
 		return nil, 0, fmt.Errorf(
@@ -212,9 +225,6 @@ func (s *Service) updateUserRoles(ctx context.Context, userID uint, newRoleIDs [
 	if err != nil {
 		return fmt.Errorf("get current roles: %w", err)
 	}
-	fmt.Println("userID----------///////////////////////: %w", userID)
-
-	fmt.Println("currentRoles----------///////////////////////: %w", len(currentRoles))
 
 	// Convert to maps for easier comparison
 	currentRoleMap := make(map[int]bool)
