@@ -43,7 +43,8 @@ func (r *RoleRepository) GetRolePaginated(
 
 	// Build the base query
 	query := r.db.WithContext(ctx).Model(&models.Role{}).
-		Preload("Menus")
+		Preload("Menus").
+		Preload("Apis")
 
 	// Apply search conditions if any
 	if len(searchConditions) > 0 {
@@ -179,6 +180,37 @@ func (r *RoleRepository) AssignMenus(ctx context.Context, roleID uint, menuIDs [
 	// Replace all menus (this will remove old ones and add new ones)
 	if err := r.db.WithContext(ctx).Model(&role).Association("Menus").Replace(&menus); err != nil {
 		return fmt.Errorf("failed to replace menus: %w", err)
+	}
+
+	return nil
+}
+
+func (r *RoleRepository) AssignApis(ctx context.Context, roleID uint, apiIDs []int) error {
+	// First, verify the role exists
+	var role models.Role
+	if err := r.db.WithContext(ctx).First(&role, roleID).Error; err != nil {
+		return fmt.Errorf("role not found: %w", err)
+	}
+
+	// If no apis to assign, clear all existing apis
+	if len(apiIDs) == 0 {
+		return r.db.WithContext(ctx).Model(&role).Association("Apis").Clear()
+	}
+
+	// Find the apis
+	var apis []models.Api
+	if err := r.db.WithContext(ctx).Where("id IN ?", apiIDs).Find(&apis).Error; err != nil {
+		return fmt.Errorf("failed to find apis: %w", err)
+	}
+
+	// Check if all requested apis exist
+	if len(apis) != len(apiIDs) {
+		return fmt.Errorf("some apis were not found")
+	}
+
+	// Replace all apis (this will remove old ones and add new ones)
+	if err := r.db.WithContext(ctx).Model(&role).Association("Apis").Replace(&apis); err != nil {
+		return fmt.Errorf("failed to replace apis: %w", err)
 	}
 
 	return nil

@@ -22,6 +22,7 @@ type roleRepository interface {
 	Update(ctx context.Context, dept *models.Role) error
 	Delete(ctx context.Context, post *models.Role) error
 	AssignMenus(ctx context.Context, roleID uint, MenuIDs []int) error
+	AssignApis(ctx context.Context, roleID uint, ApiIDs []int) error
 }
 
 type Service struct {
@@ -112,6 +113,13 @@ func (s *Service) Authorize(ctx context.Context, request domain.AuthorizeRoleReq
 		// Or return error to rollback the transaction
 		slog.Error("assign menus to role: %w", err)
 		return nil, fmt.Errorf("assign menus to role: %w", err)
+	}
+
+	if err := s.roleRepository.AssignApis(ctx, role.ID, request.ApiIDs); err != nil {
+		// Optionally: log error but don't fail the user creation?
+		// Or return error to rollback the transaction
+		slog.Error("assign apis to role: %w", err)
+		return nil, fmt.Errorf("assign apis to role: %w", err)
 	}
 
 	return &role, nil

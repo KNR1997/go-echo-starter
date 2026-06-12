@@ -3,10 +3,17 @@ package responses
 import "go-echo-starter/internal/models"
 
 type RoleResponse struct {
-	ID      uint   `json:"id" example:"1"`
-	Name    string `json:"name" example:"Admin"`
-	Desc    string `json:"desc" example:"some description"`
-	MenuIDs []uint `json:"menu_ids" example:"[1,2,3]"`
+	ID      uint      `json:"id" example:"1"`
+	Name    string    `json:"name" example:"Admin"`
+	Desc    string    `json:"desc" example:"some description"`
+	MenuIDs []uint    `json:"menu_ids" example:"[1,2,3]"`
+	Apis    []ApiInfo `json:"apis"`
+}
+
+type ApiInfo struct {
+	ID     uint   `json:"id" example:"1"`
+	Path   string `json:"path" example:"/api/v1/users"`
+	Method string `json:"method" example:"GET"`
 }
 
 func NewRoleResponse(roles []models.Role) *[]RoleResponse {
@@ -19,11 +26,22 @@ func NewRoleResponse(roles []models.Role) *[]RoleResponse {
 			menuIDs[j] = menu.ID
 		}
 
+		// Extract menu IDs from the role's menus
+		apis := make([]ApiInfo, len(roles[i].Apis))
+		for j, api := range roles[i].Apis {
+			apis[j] = ApiInfo{
+				ID:     api.ID,
+				Path:   api.Path,
+				Method: api.Method,
+			}
+		}
+
 		roleResponse = append(roleResponse, RoleResponse{
 			ID:      roles[i].ID,
 			Name:    roles[i].Name,
 			Desc:    roles[i].Desc,
 			MenuIDs: menuIDs,
+			Apis:    apis,
 		})
 	}
 

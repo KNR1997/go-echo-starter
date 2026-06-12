@@ -13,4 +13,5 @@ type DeleteRoleRequest struct {
 type AuthorizeRoleRequest struct {
 	RoleID  uint
 	MenuIDs []int
+	ApiIDs  []int
 }

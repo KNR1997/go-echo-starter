@@ -27,12 +27,16 @@ type UpdateRoleRequest struct {
 type AuthorizeRoleRequest struct {
 	ID       int   `json:"id" validate:"required" example:"1"`
 	Menu_IDs []int `json:"menu_ids" validate:"required" example:"[1, 2, 3]"`
+	Api_IDs  []int `json:"api_ids" validate:"required" example:"[1, 2, 3]"`
 }
 
 func (request AuthorizeRoleRequest) Validate() error {
 	return validation.ValidateStruct(&request,
 		validation.Field(&request.ID, validation.Required),
 		validation.Field(&request.Menu_IDs,
+			validation.Each(validation.Min(1)), // Only validate each item if present
+		),
+		validation.Field(&request.Api_IDs,
 			validation.Each(validation.Min(1)), // Only validate each item if present
 		),
 	)

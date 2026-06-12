@@ -108,8 +108,6 @@ func (h *RoleHandlers) GetRolePaginated(c echo.Context) error {
 		)
 	}
 
-	fmt.Println("role 1: ", roles[0])
-
 	return responses.Response(c, http.StatusOK, map[string]any{
 		"data":     responses.NewRoleResponse(roles),
 		"page":     page,
@@ -221,6 +219,7 @@ func (p *RoleHandlers) AuthorizeRole(c echo.Context) error {
 	data := domain.AuthorizeRoleRequest{
 		RoleID:  uint(roleID),
 		MenuIDs: authorizeRequest.Menu_IDs,
+		ApiIDs:  authorizeRequest.Api_IDs,
 	}
 
 	if _, err := p.roleService.Authorize(c.Request().Context(), data); err != nil {
