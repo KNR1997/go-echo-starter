@@ -42,7 +42,8 @@ func (r *RoleRepository) GetRolePaginated(
 	var total int64
 
 	// Build the base query
-	query := r.db.WithContext(ctx).Model(&models.Role{})
+	query := r.db.WithContext(ctx).Model(&models.Role{}).
+		Preload("Menus")
 
 	// Apply search conditions if any
 	if len(searchConditions) > 0 {
@@ -62,26 +63,6 @@ func (r *RoleRepository) GetRolePaginated(
 		Find(&roles).Error; err != nil {
 		return nil, 0, fmt.Errorf("select roles: %w", err)
 	}
-
-	// if err := r.db.WithContext(ctx).
-	// 	Model(&models.Role{}).
-	// 	Count(&total).Error; err != nil {
-	// 	return nil, 0, fmt.Errorf(
-	// 		"count roles: %w",
-	// 		err,
-	// 	)
-	// }
-
-	// if err := r.db.WithContext(ctx).
-	// 	Limit(pagination.PageSize).
-	// 	Offset(pagination.Offset()).
-	// 	Order("id DESC").
-	// 	Find(&roles).Error; err != nil {
-	// 	return nil, 0, fmt.Errorf(
-	// 		"select roles: %w",
-	// 		err,
-	// 	)
-	// }
 
 	return roles, total, nil
 }
@@ -167,6 +148,37 @@ func (r *RoleRepository) Update(ctx context.Context, role *models.Role) error {
 func (r *RoleRepository) Delete(ctx context.Context, role *models.Role) error {
 	if err := r.db.WithContext(ctx).Delete(role).Error; err != nil {
 		return fmt.Errorf("execute delete role query: %w", err)
+	}
+
+	return nil
+}
+
+func (r *RoleRepository) AssignMenus(ctx context.Context, roleID uint, menuIDs []int) error {
+	// First, verify the role exists
+	var role models.Role
+	if err := r.db.WithContext(ctx).First(&role, roleID).Error; err != nil {
+		return fmt.Errorf("role not found: %w", err)
+	}
+
+	// If no menus to assign, clear all existing menus
+	if len(menuIDs) == 0 {
+		return r.db.WithContext(ctx).Model(&role).Association("Menus").Clear()
+	}
+
+	// Find the menus
+	var menus []models.Menu
+	if err := r.db.WithContext(ctx).Where("id IN ?", menuIDs).Find(&menus).Error; err != nil {
+		return fmt.Errorf("failed to find menus: %w", err)
+	}
+
+	// Check if all requested menus exist
+	if len(menus) != len(menuIDs) {
+		return fmt.Errorf("some menus were not found")
+	}
+
+	// Replace all menus (this will remove old ones and add new ones)
+	if err := r.db.WithContext(ctx).Model(&role).Association("Menus").Replace(&menus); err != nil {
+		return fmt.Errorf("failed to replace menus: %w", err)
 	}
 
 	return nil

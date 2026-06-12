@@ -9,3 +9,8 @@ type UpdateRoleRequest struct {
 type DeleteRoleRequest struct {
 	RoleID uint
 }
+
+type AuthorizeRoleRequest struct {
+	RoleID  uint
+	MenuIDs []int
+}

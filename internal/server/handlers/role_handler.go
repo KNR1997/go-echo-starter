@@ -26,6 +26,7 @@ type roleService interface {
 	Create(ctx context.Context, role *models.Role) error
 	Update(ctx context.Context, request domain.UpdateRoleRequest) (*models.Role, error)
 	Delete(ctx context.Context, request domain.DeleteRoleRequest) error
+	Authorize(ctx context.Context, request domain.AuthorizeRoleRequest) (*models.Role, error)
 }
 
 type RoleHandlers struct {
@@ -106,6 +107,8 @@ func (h *RoleHandlers) GetRolePaginated(c echo.Context) error {
 			"Failed to get roles",
 		)
 	}
+
+	fmt.Println("role 1: ", roles[0])
 
 	return responses.Response(c, http.StatusOK, map[string]any{
 		"data":     responses.NewRoleResponse(roles),
@@ -192,4 +195,37 @@ func (p *RoleHandlers) DeleteRole(c echo.Context) error {
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Role successfully deleted")
+}
+
+func (p *RoleHandlers) AuthorizeRole(c echo.Context) error {
+	idParam := c.Param("id")
+	roleID, err := strconv.Atoi(idParam)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid role ID")
+	}
+
+	var authorizeRequest requests.AuthorizeRoleRequest
+	if err := c.Bind(&authorizeRequest); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
+	}
+
+	if err := authorizeRequest.Validate(); err != nil {
+		return responses.ValidationErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"Validation failed",
+			responses.ParseValidationErrors(err),
+		)
+	}
+
+	data := domain.AuthorizeRoleRequest{
+		RoleID:  uint(roleID),
+		MenuIDs: authorizeRequest.Menu_IDs,
+	}
+
+	if _, err := p.roleService.Authorize(c.Request().Context(), data); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to authorize role: "+err.Error())
+	}
+
+	return responses.MessageResponse(c, http.StatusCreated, "Role successfully authorized")
 }

@@ -6,6 +6,7 @@ import (
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/utils"
+	"log/slog"
 )
 
 type roleRepository interface {
@@ -20,6 +21,7 @@ type roleRepository interface {
 	Create(ctx context.Context, dept *models.Role) error
 	Update(ctx context.Context, dept *models.Role) error
 	Delete(ctx context.Context, post *models.Role) error
+	AssignMenus(ctx context.Context, roleID uint, MenuIDs []int) error
 }
 
 type Service struct {
@@ -71,30 +73,46 @@ func (s *Service) Create(ctx context.Context, dept *models.Role) error {
 }
 
 func (s *Service) Update(ctx context.Context, request domain.UpdateRoleRequest) (*models.Role, error) {
-	dept, err := s.roleRepository.GetById(ctx, request.RoleID)
+	role, err := s.roleRepository.GetById(ctx, request.RoleID)
 	if err != nil {
 		return nil, fmt.Errorf("get stored role from repository: %w", err)
 	}
 
-	dept.Name = request.Name
-	dept.Desc = request.Desc
+	role.Name = request.Name
+	role.Desc = request.Desc
 
-	if err := s.roleRepository.Update(ctx, &dept); err != nil {
+	if err := s.roleRepository.Update(ctx, &role); err != nil {
 		return nil, fmt.Errorf("update role in repository: %w", err)
 	}
 
-	return &dept, nil
+	return &role, nil
 }
 
 func (s *Service) Delete(ctx context.Context, request domain.DeleteRoleRequest) error {
-	dept, err := s.roleRepository.GetById(ctx, request.RoleID)
+	role, err := s.roleRepository.GetById(ctx, request.RoleID)
 	if err != nil {
 		return fmt.Errorf("get stored role from repository: %w", err)
 	}
 
-	if err := s.roleRepository.Delete(ctx, &dept); err != nil {
+	if err := s.roleRepository.Delete(ctx, &role); err != nil {
 		return fmt.Errorf("delete role in repository: %w", err)
 	}
 
 	return nil
+}
+
+func (s *Service) Authorize(ctx context.Context, request domain.AuthorizeRoleRequest) (*models.Role, error) {
+	role, err := s.roleRepository.GetById(ctx, request.RoleID)
+	if err != nil {
+		return nil, fmt.Errorf("get stored role from repository: %w", err)
+	}
+
+	if err := s.roleRepository.AssignMenus(ctx, role.ID, request.MenuIDs); err != nil {
+		// Optionally: log error but don't fail the user creation?
+		// Or return error to rollback the transaction
+		slog.Error("assign menus to role: %w", err)
+		return nil, fmt.Errorf("assign menus to role: %w", err)
+	}
+
+	return &role, nil
 }
