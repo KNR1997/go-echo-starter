@@ -3,12 +3,14 @@ package base
 import (
 	"context"
 	"fmt"
+	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 )
 
 type userRepository interface {
 	GetUserRoles(ctx context.Context, userID uint) ([]models.Role, error)
 	GetByID(ctx context.Context, userID uint) (models.User, error)
+	Update(ctx context.Context, user *models.User) error
 }
 
 type roleRepository interface {
@@ -75,4 +77,29 @@ func (s *Service) GetUserMenus(ctx context.Context, userID uint) ([]models.Menu,
 	}
 
 	return uniqueMenus, nil
+}
+
+func (s *Service) GetMeDetails(ctx context.Context, userID uint) (*models.User, error) {
+	user, err := s.userRepository.GetByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user from repository: %w", err)
+	}
+
+	return &user, nil
+}
+
+func (s *Service) ProfileUpdate(ctx context.Context, request domain.UpdateUserRequest) (*models.User, error) {
+	user, err := s.userRepository.GetByID(ctx, request.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("get user from repository: %w", err)
+	}
+
+	user.Username = request.UserName
+	user.Email = request.Email
+
+	if err := s.userRepository.Update(ctx, &user); err != nil {
+		return nil, fmt.Errorf("update user in repository: %w", err)
+	}
+
+	return &user, nil
 }
