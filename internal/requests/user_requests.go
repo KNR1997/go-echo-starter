@@ -105,15 +105,31 @@ type UpdateUserRequest struct {
 	Email       string `json:"email" validate:"required" example:"john.doe@example.com"`
 	IsSuperUser bool   `json:"is_superuser" example:"false"`
 	IsActive    bool   `json:"is_active" example:"true"`
-	RoleIds     []int  `json:"role_ids" validate:"required" example:"[1]"`
-	DeptId      int    `json:"dept_id" validate:"required" example:"1"`
+	RoleIds     []int  `json:"role_ids" example:"[1]"`
+	DeptId      int    `json:"dept_id" example:"1"`
 }
 
 func (request UpdateUserRequest) Validate() error {
 	return validation.ValidateStruct(&request,
 		validation.Field(&request.Username, validation.Required),
 		validation.Field(&request.Email, validation.Required),
+		validation.Field(&request.IsSuperUser, validation.Required),
+		validation.Field(&request.IsActive, validation.Required),
 		// validation.Field(&request.RoleIds, validation.Required),
 		// validation.Field(&request.DeptId, validation.Required),
+	)
+}
+
+type UpdateProfileRequest struct {
+	UserID   uint   `json:"id" validate:"required" example:"1"`
+	Username string `json:"username" validate:"required" example:"johnDoe"`
+	Email    string `json:"email" validate:"required" example:"john.doe@example.com"`
+}
+
+func (request UpdateProfileRequest) Validate() error {
+	return validation.ValidateStruct(&request,
+		validation.Field(&request.UserID, validation.Required),
+		validation.Field(&request.Username, validation.Required),
+		validation.Field(&request.Email, validation.Required),
 	)
 }
