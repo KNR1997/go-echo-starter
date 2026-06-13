@@ -215,3 +215,17 @@ func (r *RoleRepository) AssignApis(ctx context.Context, roleID uint, apiIDs []i
 
 	return nil
 }
+
+func (r *RoleRepository) GetRoleMenus(ctx context.Context, roleID uint) ([]models.Menu, error) {
+	var role models.Role
+	var menus []models.Menu
+
+	// First, load the role
+	if err := r.db.WithContext(ctx).First(&role, roleID).Error; err != nil {
+		return nil, err
+	}
+
+	// Then get the menus association
+	err := r.db.WithContext(ctx).Model(&role).Association("Menus").Find(&menus)
+	return menus, err
+}
