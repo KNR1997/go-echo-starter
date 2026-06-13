@@ -200,8 +200,6 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateUserRequest) 
 		}
 	}
 
-	fmt.Println("updatign User")
-
 	user.Username = request.UserName
 	user.Email = request.Email
 	user.IsSuperUser = request.IsSuperUser
