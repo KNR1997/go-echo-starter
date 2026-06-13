@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userRepository interface {
 	GetUserRoles(ctx context.Context, userID uint) ([]models.Role, error)
 	GetByID(ctx context.Context, userID uint) (models.User, error)
 	Update(ctx context.Context, user *models.User) error
+	ExistsByEmail(ctx context.Context, email string) (bool, error)
 }
 
 type roleRepository interface {
@@ -94,6 +97,17 @@ func (s *Service) ProfileUpdate(ctx context.Context, request domain.UpdateUserRe
 		return nil, fmt.Errorf("get user from repository: %w", err)
 	}
 
+	if user.Email != request.Email {
+		exists, err := s.userRepository.ExistsByEmail(ctx, request.Email)
+		if err != nil {
+			return nil, fmt.Errorf("check user exists: %w", err)
+		}
+
+		if exists {
+			return nil, fmt.Errorf("user email already exists")
+		}
+	}
+
 	user.Username = request.UserName
 	user.Email = request.Email
 
@@ -101,5 +115,47 @@ func (s *Service) ProfileUpdate(ctx context.Context, request domain.UpdateUserRe
 		return nil, fmt.Errorf("update user in repository: %w", err)
 	}
 
+	return &user, nil
+}
+
+func (s *Service) PasswordUpdate(ctx context.Context, request domain.UpdatePasswordRequest) (*models.User, error) {
+	// Get user by ID
+	user, err := s.userRepository.GetByID(ctx, request.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("get user from repository: %w", err)
+	}
+
+	// Verify current password if required
+	if request.OldPassword != "" {
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.OldPassword))
+		if err != nil {
+			return nil, fmt.Errorf("current password is incorrect: %w", err)
+		}
+	}
+
+	// Validate new password strength
+	if len(request.NewPassword) < 6 {
+		return nil, fmt.Errorf("new password must be at least 6 characters long")
+	}
+
+	// Encrypt the new password
+	encryptedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(request.NewPassword),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("encrypt password: %w", err)
+	}
+
+	// Update user password
+	user.Password = string(encryptedPassword)
+
+	//  Save to repository
+	if err := s.userRepository.Update(ctx, &user); err != nil {
+		return nil, fmt.Errorf("update user in repository: %w", err)
+	}
+
+	//  Return updated user
+	user.Password = "" // Don't return password hash to client
 	return &user, nil
 }

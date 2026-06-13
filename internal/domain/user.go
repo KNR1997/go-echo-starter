@@ -14,3 +14,9 @@ type UpdateUserRequest struct {
 type DeleteUserRequest struct {
 	UserID uint
 }
+
+type UpdatePasswordRequest struct {
+	UserID      uint
+	OldPassword string
+	NewPassword string
+}

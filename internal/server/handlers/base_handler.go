@@ -16,6 +16,7 @@ type baseService interface {
 	GetUserMenus(ctx context.Context, userId uint) ([]models.Menu, error)
 	GetMeDetails(ctx context.Context, userId uint) (*models.User, error)
 	ProfileUpdate(ctx context.Context, request domain.UpdateUserRequest) (*models.User, error)
+	PasswordUpdate(ctx context.Context, request domain.UpdatePasswordRequest) (*models.User, error)
 }
 
 type BaseHandlers struct {
@@ -90,5 +91,42 @@ func (p *BaseHandlers) ProfileUpdate(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update user: "+err.Error())
 	}
 
-	return responses.MessageResponse(c, http.StatusCreated, "User successfully updated")
+	return responses.MessageResponse(c, http.StatusCreated, "User Profile successfully updated")
+}
+
+func (p *BaseHandlers) PasswordUpdate(c echo.Context) error {
+	authClaims, err := getAuthClaims(c)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+	}
+
+	var updateRequest requests.UpdatePasswordRequest
+	if err := c.Bind(&updateRequest); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
+	}
+
+	data := domain.UpdatePasswordRequest{
+		UserID:      authClaims.ID,
+		OldPassword: updateRequest.OldPassword,
+		NewPassword: updateRequest.NewPassword,
+	}
+
+	if err := updateRequest.Validate(); err != nil {
+		return responses.ValidationErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"Validation failed",
+			responses.ParseValidationErrors(err),
+		)
+	}
+
+	if _, err := p.baseService.PasswordUpdate(c.Request().Context(), data); err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			return responses.ErrorResponse(c, http.StatusConflict, err.Error())
+		}
+
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update user password: "+err.Error())
+	}
+
+	return responses.MessageResponse(c, http.StatusCreated, "User password successfully updated")
 }
