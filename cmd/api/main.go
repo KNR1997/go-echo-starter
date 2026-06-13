@@ -93,7 +93,7 @@ func run() error {
 	menuRepository := repositories.NewMenuRepository(gormDB)
 	menuService := menu.NewService(menuRepository)
 
-	baseService := base.NewService(userRepository, roleRepository)
+	baseService := base.NewService(userRepository, roleRepository, menuRepository)
 
 	provider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
