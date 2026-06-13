@@ -7,26 +7,46 @@ import (
 )
 
 type userRepository interface {
-	GetUserRoles(ctx context.Context, userID uint) ([]models.Role, error) // Changed roleID to userID
+	GetUserRoles(ctx context.Context, userID uint) ([]models.Role, error)
+	GetByID(ctx context.Context, userID uint) (models.User, error)
 }
 
 type roleRepository interface {
 	GetRoleMenus(ctx context.Context, roleID uint) ([]models.Menu, error)
 }
 
+type menuRepository interface {
+	GetMenus(ctx context.Context) ([]models.Menu, error)
+}
+
 type Service struct {
 	userRepository userRepository
 	roleRepository roleRepository
+	menuRepository menuRepository
 }
 
-func NewService(userRepository userRepository, roleRepository roleRepository) *Service { // Added userRepository parameter
+func NewService(userRepository userRepository, roleRepository roleRepository, menuRepository menuRepository) *Service { // Added userRepository parameter
 	return &Service{
 		userRepository: userRepository,
 		roleRepository: roleRepository,
+		menuRepository: menuRepository,
 	}
 }
 
 func (s *Service) GetUserMenus(ctx context.Context, userID uint) ([]models.Menu, error) {
+	user, err := s.userRepository.GetByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user from repository: %w", err)
+	}
+
+	if user.IsSuperUser {
+		menus, err := s.menuRepository.GetMenus(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("get menus from repository: %w", err)
+		}
+		return menus, nil
+	}
+
 	// Get all roles for the user
 	roles, err := s.userRepository.GetUserRoles(ctx, userID)
 	if err != nil {
