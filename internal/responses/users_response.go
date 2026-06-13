@@ -64,22 +64,22 @@ func NewUserResponse(users []models.User) *[]UserResponse {
 // For single user response
 func NewSingleUserResponse(user *models.User) *UserResponse {
 	// Convert roles
-	roles := make([]RoleResponse, 0, len(user.Roles))
-	for _, role := range user.Roles {
-		roles = append(roles, RoleResponse{
-			ID:   role.ID,
-			Name: role.Name,
-		})
-	}
+	// roles := make([]RoleResponse, 0, len(user.Roles))
+	// for _, role := range user.Roles {
+	// 	roles = append(roles, RoleResponse{
+	// 		ID:   role.ID,
+	// 		Name: role.Name,
+	// 	})
+	// }
 
 	// Convert department
-	var department *DepartmentResponse
-	if user.Department != nil {
-		department = &DepartmentResponse{
-			ID:   user.Department.ID,
-			Name: user.Department.Name,
-		}
-	}
+	// var department *DepartmentResponse
+	// if user.Department != nil {
+	// 	department = &DepartmentResponse{
+	// 		ID:   user.Department.ID,
+	// 		Name: user.Department.Name,
+	// 	}
+	// }
 
 	return &UserResponse{
 		ID:          user.ID,
@@ -89,7 +89,7 @@ func NewSingleUserResponse(user *models.User) *UserResponse {
 		Phone:       user.Phone,
 		IsActive:    user.IsActive,
 		IsSuperUser: user.IsSuperUser,
-		Roles:       roles,
-		Department:  department,
+		// Roles:       roles,
+		// Department:  department,
 	}
 }
