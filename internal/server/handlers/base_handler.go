@@ -32,6 +32,6 @@ func (h *BaseHandlers) GetUserMenu(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Failed to get all menus: "+err.Error())
 	}
 
-	response := responses.NewMenuResponse(menus)
+	response := responses.NewMenuTreeResponse(menus)
 	return responses.Response(c, http.StatusOK, response)
 }
