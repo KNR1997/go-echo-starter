@@ -41,7 +41,22 @@ func (ba BasicAuth) Validate() error {
 }
 
 type LoginRequest struct {
-	BasicAuth
+	Email    string `json:"email" validate:"required" example:"john.doe@example.com"`
+	Password string `json:"password" validate:"required" example:"11111111"`
+}
+
+func (ba LoginRequest) Validate() error {
+	return validation.ValidateStruct(&ba,
+		validation.Field(
+			&ba.Email,
+			validation.Required.Error("Email is required"),
+			is.Email.Error("Invalid email address"),
+		),
+		validation.Field(
+			&ba.Password,
+			validation.Required.Error("Password is required"),
+		),
+	)
 }
 
 type RegisterRequest struct {
@@ -129,5 +144,17 @@ func (request UpdateProfileRequest) Validate() error {
 	return validation.ValidateStruct(&request,
 		validation.Field(&request.Username, validation.Required),
 		validation.Field(&request.Email, validation.Required),
+	)
+}
+
+type UpdatePasswordRequest struct {
+	OldPassword string `json:"oldPassword" validate:"required" example:"123456"`
+	NewPassword string `json:"newPassword" validate:"required" example:"333444"`
+}
+
+func (request UpdatePasswordRequest) Validate() error {
+	return validation.ValidateStruct(&request,
+		validation.Field(&request.OldPassword, validation.Required),
+		validation.Field(&request.NewPassword, validation.Required),
 	)
 }
