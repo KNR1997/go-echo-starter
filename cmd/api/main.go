@@ -14,6 +14,7 @@ import (
 	"go-echo-starter/internal/server/routes"
 	"go-echo-starter/internal/services/api"
 	"go-echo-starter/internal/services/auth"
+	"go-echo-starter/internal/services/base"
 	"go-echo-starter/internal/services/dept"
 	"go-echo-starter/internal/services/menu"
 	"go-echo-starter/internal/services/oauth"
@@ -92,6 +93,8 @@ func run() error {
 	menuRepository := repositories.NewMenuRepository(gormDB)
 	menuService := menu.NewService(menuRepository)
 
+	baseService := base.NewService(userRepository, roleRepository)
+
 	provider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
 		return fmt.Errorf("oidc.NewProvider: %w", err)
@@ -110,6 +113,7 @@ func run() error {
 	authService := auth.NewService(userService, tokenService)
 	oAuthService := oauth.NewService(verifier, tokenService, userService)
 
+	baseHandler := handlers.NewBaseHandlers(baseService)
 	postHandler := handlers.NewPostHandlers(postService)
 	authHandler := handlers.NewAuthHandler(authService)
 	oAuthHandler := handlers.NewOAuthHandler(oAuthService)
@@ -134,6 +138,7 @@ func run() error {
 		DepartmentHandlers: deptHandler,
 		ApiHandlers:        apiHandler,
 		MenuHandlers:       menuHandler,
+		BaseHandlers:       baseHandler,
 
 		AuthMiddleware:            authMiddleware,
 		RequestLoggerMiddleware:   reguestLoggerMiddleware,

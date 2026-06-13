@@ -20,6 +20,7 @@ type Handlers struct {
 	DepartmentHandlers *handlers.DepartmentHandlers
 	ApiHandlers        *handlers.ApiHandlers
 	MenuHandlers       *handlers.MenuHandlers
+	BaseHandlers       *handlers.BaseHandlers
 
 	AuthMiddleware            echo.MiddlewareFunc
 	RequestLoggerMiddleware   echo.MiddlewareFunc
@@ -79,6 +80,8 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 		handlers.AuthMiddleware,
 		handlers.RequestDebuggerMiddleware,
 	)
+
+	authorizedAPI.GET("/base/usermenu", handlers.BaseHandlers.GetUserMenu)
 
 	privateAPI.GET("/posts", handlers.PostHandler.GetPostPaginated)
 	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
