@@ -121,14 +121,12 @@ func (request UpdateUserRequest) Validate() error {
 }
 
 type UpdateProfileRequest struct {
-	UserID   uint   `json:"id" validate:"required" example:"1"`
 	Username string `json:"username" validate:"required" example:"johnDoe"`
 	Email    string `json:"email" validate:"required" example:"john.doe@example.com"`
 }
 
 func (request UpdateProfileRequest) Validate() error {
 	return validation.ValidateStruct(&request,
-		validation.Field(&request.UserID, validation.Required),
 		validation.Field(&request.Username, validation.Required),
 		validation.Field(&request.Email, validation.Required),
 	)

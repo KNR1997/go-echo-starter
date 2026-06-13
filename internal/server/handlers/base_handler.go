@@ -57,11 +57,10 @@ func (h *BaseHandlers) GetMeDetails(c echo.Context) error {
 }
 
 func (p *BaseHandlers) ProfileUpdate(c echo.Context) error {
-	// idParam := c.Param("id")
-	// userID, err := strconv.Atoi(idParam)
-	// if err != nil {
-	// 	return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid department ID")
-	// }
+	authClaims, err := getAuthClaims(c)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+	}
 
 	var updateRequest requests.UpdateProfileRequest
 	if err := c.Bind(&updateRequest); err != nil {
@@ -78,7 +77,7 @@ func (p *BaseHandlers) ProfileUpdate(c echo.Context) error {
 	}
 
 	data := domain.UpdateUserRequest{
-		UserID:   updateRequest.UserID,
+		UserID:   authClaims.ID,
 		UserName: updateRequest.Username,
 		Email:    updateRequest.Email,
 	}
