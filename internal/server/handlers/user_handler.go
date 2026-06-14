@@ -19,6 +19,7 @@ type userService interface {
 	GetUsers(ctx context.Context) ([]models.User, error)
 	Create(ctx context.Context, request *requests.CreateUserRequest) error
 	Update(ctx context.Context, request domain.UpdateUserRequest) (*models.User, error)
+	Patch(ctx context.Context, request domain.PatchUserRequest) (*models.User, error)
 	GetUserPaginated(
 		ctx context.Context,
 		pagination domain.Pagination,
@@ -192,6 +193,30 @@ func (p *UserHandlers) UpdateUser(c echo.Context) error {
 			return responses.ErrorResponse(c, http.StatusConflict, err.Error())
 		}
 
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update user: "+err.Error())
+	}
+
+	return responses.MessageResponse(c, http.StatusCreated, "User successfully updated")
+}
+
+func (p *UserHandlers) PatchUser(c echo.Context) error {
+	idParam := c.Param("id")
+	menuID, err := strconv.Atoi(idParam)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid user ID")
+	}
+
+	var updateRequest requests.PatchUserRequest
+	if err := c.Bind(&updateRequest); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
+	}
+
+	data := domain.PatchUserRequest{
+		UserID:   uint(menuID),
+		IsActive: updateRequest.IsActive,
+	}
+
+	if _, err := p.userService.Patch(c.Request().Context(), data); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update user: "+err.Error())
 	}
 

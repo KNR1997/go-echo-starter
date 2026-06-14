@@ -95,6 +95,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	privateAPI.GET("/users", handlers.UserHandlers.GetUserPaginated)
 	authorizedAPI.POST("/users", handlers.UserHandlers.CreateUser)
 	authorizedAPI.PUT("/users/:id", handlers.UserHandlers.UpdateUser)
+	authorizedAPI.PATCH("/users/:id", handlers.UserHandlers.PatchUser)
 	authorizedAPI.DELETE("/users/:id", handlers.UserHandlers.DeleteUser)
 
 	privateAPI.GET("/roles", handlers.RoleHandlers.GetRolePaginated)

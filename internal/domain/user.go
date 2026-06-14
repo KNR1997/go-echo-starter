@@ -20,3 +20,8 @@ type UpdatePasswordRequest struct {
 	OldPassword string
 	NewPassword string
 }
+
+type PatchUserRequest struct {
+	UserID   uint
+	IsActive *bool
+}

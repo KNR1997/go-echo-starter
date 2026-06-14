@@ -158,3 +158,7 @@ func (request UpdatePasswordRequest) Validate() error {
 		validation.Field(&request.NewPassword, validation.Required),
 	)
 }
+
+type PatchUserRequest struct {
+	IsActive *bool `json:"is_active" example:"false"`
+}

@@ -217,6 +217,23 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateUserRequest) 
 	return &user, nil
 }
 
+func (s *Service) Patch(ctx context.Context, request domain.PatchUserRequest) (*models.User, error) {
+	user, err := s.userRepository.GetByID(ctx, request.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("get stored User from repository: %w", err)
+	}
+
+	if request.IsActive != nil {
+		user.IsActive = *request.IsActive
+	}
+
+	if err := s.userRepository.Update(ctx, &user); err != nil {
+		return nil, fmt.Errorf("update User in repository: %w", err)
+	}
+
+	return &user, nil
+}
+
 func (s *Service) updateUserRoles(ctx context.Context, userID uint, newRoleIDs []int) error {
 	// Get current roles
 	currentRoles, err := s.userRepository.GetUserRoles(ctx, userID)
