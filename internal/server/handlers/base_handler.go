@@ -17,6 +17,7 @@ type baseService interface {
 	GetMeDetails(ctx context.Context, userId uint) (*models.User, error)
 	ProfileUpdate(ctx context.Context, request domain.UpdateUserRequest) (*models.User, error)
 	PasswordUpdate(ctx context.Context, request domain.UpdatePasswordRequest) (*models.User, error)
+	InitiateAdmin(ctx context.Context) error
 }
 
 type BaseHandlers struct {
@@ -129,4 +130,13 @@ func (p *BaseHandlers) PasswordUpdate(c echo.Context) error {
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "User password successfully updated")
+}
+
+func (h *BaseHandlers) InitiateAdmin(c echo.Context) error {
+	if err := h.baseService.InitiateAdmin(c.Request().Context()); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadGateway, err.Error())
+	}
+
+	return responses.MessageResponse(c, http.StatusCreated, "Initial admin created successfully")
+
 }

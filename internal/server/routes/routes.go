@@ -85,6 +85,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	authorizedAPI.GET("/base/me", handlers.BaseHandlers.GetMeDetails)
 	authorizedAPI.POST("/base/profileUpdate", handlers.BaseHandlers.ProfileUpdate)
 	authorizedAPI.POST("/base/passwordUpdate", handlers.BaseHandlers.PasswordUpdate)
+	privateAPI.POST("/base/initiateAdmin", handlers.BaseHandlers.InitiateAdmin)
 
 	privateAPI.GET("/posts", handlers.PostHandler.GetPostPaginated)
 	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)

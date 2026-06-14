@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,6 +15,8 @@ type userRepository interface {
 	GetByID(ctx context.Context, userID uint) (models.User, error)
 	Update(ctx context.Context, user *models.User) error
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
+	Create(ctx context.Context, user *models.User) error
+	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 }
 
 type roleRepository interface {
@@ -158,4 +161,43 @@ func (s *Service) PasswordUpdate(ctx context.Context, request domain.UpdatePassw
 	//  Return updated user
 	user.Password = "" // Don't return password hash to client
 	return &user, nil
+}
+
+func (s *Service) InitiateAdmin(ctx context.Context) error {
+	user, err := s.userRepository.GetUserByEmail(ctx, "admin@demo.com")
+	if err != nil {
+		// Check if this is a "not found" error
+		if !strings.Contains(err.Error(), "not found") { // Adjust based on your error
+			return fmt.Errorf("check user exists: %w", err)
+		}
+
+		encryptedPassword, err := bcrypt.GenerateFromPassword(
+			[]byte("demodemo"),
+			bcrypt.DefaultCost,
+		)
+		if err != nil {
+			return fmt.Errorf("encrypt password: %w", err)
+		}
+
+		// User not found, create new admin
+		newUser := &models.User{
+			Email:       "admin@demo.com",
+			Username:    "JohnDoe",
+			Password:    string(encryptedPassword),
+			IsActive:    true,
+			IsSuperUser: true,
+		}
+		if err := s.userRepository.Create(ctx, newUser); err != nil {
+			return fmt.Errorf("create user in repository: %w", err)
+		}
+		return nil
+	}
+
+	// User exists, update to superuser
+	user.IsSuperUser = true
+	if err := s.userRepository.Update(ctx, &user); err != nil {
+		return fmt.Errorf("update user in repository: %w", err)
+	}
+
+	return nil
 }
