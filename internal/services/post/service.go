@@ -7,8 +7,7 @@ import (
 	"go-echo-starter/internal/models"
 )
 
-//go:generate go tool mockgen -source=$GOFILE -destination=service_mock_test.go -package=${GOPACKAGE}_test -typed=true
-
+//go:generate go run go.uber.org/mock/mockgen -source=$GOFILE -destination=mock_post_repository.go -package=post -typed=true
 type postRepository interface {
 	Create(ctx context.Context, post *models.Post) error
 	GetPosts(ctx context.Context) ([]models.Post, error)
