@@ -96,3 +96,22 @@ func (r *MenuRepository) Delete(ctx context.Context, menu *models.Menu) error {
 
 	return nil
 }
+
+func (r *MenuRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
+	var menu models.Menu
+
+	err := r.db.WithContext(ctx).
+		Select("id").
+		Where("name = ?", name).
+		Take(&menu).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("execute exists by name query: %w", err)
+	}
+
+	return true, nil
+}
