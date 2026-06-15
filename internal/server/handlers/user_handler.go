@@ -161,7 +161,7 @@ func (p *UserHandlers) UpdateUser(c echo.Context) error {
 	idParam := c.Param("id")
 	userID, err := strconv.Atoi(idParam)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid department ID")
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Invalid user ID")
 	}
 
 	var updateRequest requests.UpdateUserRequest

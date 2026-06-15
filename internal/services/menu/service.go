@@ -11,8 +11,8 @@ type menuRepository interface {
 	GetMenus(ctx context.Context) ([]models.Menu, error)
 	GetMenuPaginated(ctx context.Context, pagination domain.Pagination) ([]models.Menu, int64, error)
 	GetById(ctx context.Context, id uint) (models.Menu, error)
-	Create(ctx context.Context, dept *models.Menu) error
-	Update(ctx context.Context, dept *models.Menu) error
+	Create(ctx context.Context, menu *models.Menu) error
+	Update(ctx context.Context, menu *models.Menu) error
 	Delete(ctx context.Context, post *models.Menu) error
 }
 
@@ -52,8 +52,8 @@ func (s *Service) GetMenuPaginated(
 	return menus, total, nil
 }
 
-func (s *Service) Create(ctx context.Context, dept *models.Menu) error {
-	if err := s.menuRepository.Create(ctx, dept); err != nil {
+func (s *Service) Create(ctx context.Context, menu *models.Menu) error {
+	if err := s.menuRepository.Create(ctx, menu); err != nil {
 		return fmt.Errorf("create Menu in repository: %w", err)
 	}
 
@@ -105,12 +105,12 @@ func (s *Service) Patch(ctx context.Context, request domain.PatchMenuRequest) (*
 }
 
 func (s *Service) Delete(ctx context.Context, request domain.DeleteMenuRequest) error {
-	dept, err := s.menuRepository.GetById(ctx, request.MenuID)
+	menu, err := s.menuRepository.GetById(ctx, request.MenuID)
 	if err != nil {
 		return fmt.Errorf("get stored Menu from repository: %w", err)
 	}
 
-	if err := s.menuRepository.Delete(ctx, &dept); err != nil {
+	if err := s.menuRepository.Delete(ctx, &menu); err != nil {
 		return fmt.Errorf("delete Menu in repository: %w", err)
 	}
 
