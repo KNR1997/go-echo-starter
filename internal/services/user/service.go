@@ -160,10 +160,11 @@ func (s *Service) Create(ctx context.Context, request *requests.CreateUserReques
 	user := &models.User{
 		Email: request.Email,
 		// Name:     request.Name,
-		Username: request.Username,
-		Password: string(encryptedPassword),
-		IsActive: request.IsActive,
-		DeptId:   request.DeptId,
+		Username:    request.Username,
+		Password:    string(encryptedPassword),
+		IsSuperUser: request.IsSuperUser,
+		IsActive:    request.IsActive,
+		DeptId:      request.DeptId,
 	}
 
 	if err := s.userRepository.Create(ctx, user); err != nil {
@@ -204,7 +205,9 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateUserRequest) 
 	user.Email = request.Email
 	user.IsSuperUser = request.IsSuperUser
 	user.IsActive = request.IsActive
-	user.DeptId = request.DeptId
+	if request.DeptId != nil {
+		user.DeptId = request.DeptId
+	}
 
 	if err := s.userRepository.Update(ctx, &user); err != nil {
 		return nil, fmt.Errorf("update user in repository: %w", err)
