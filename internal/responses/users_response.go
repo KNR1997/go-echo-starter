@@ -1,7 +1,10 @@
 // responses/user_response.go
 package responses
 
-import "go-echo-starter/internal/models"
+import (
+	"go-echo-starter/internal/models"
+	"time"
+)
 
 // DepartmentResponse represents the department data in the response
 type DepartmentResponse struct {
@@ -21,6 +24,7 @@ type UserResponse struct {
 	IsSuperUser bool                `json:"is_superuser" example:"false"`
 	Roles       []RoleResponse      `json:"roles"`
 	Department  *DepartmentResponse `json:"department,omitempty"` // Use omitempty to handle nil
+	LastLogin   *time.Time          `json:"last_login"`
 }
 
 func NewUserResponse(users []models.User) *[]UserResponse {
@@ -55,6 +59,7 @@ func NewUserResponse(users []models.User) *[]UserResponse {
 			IsSuperUser: users[i].IsSuperUser,
 			Roles:       roles,
 			Department:  department,
+			LastLogin:   users[i].LastLogin,
 		})
 	}
 

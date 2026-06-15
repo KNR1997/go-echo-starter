@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"log"
 	"log/slog"
 
 	"go-echo-starter/internal/domain"
@@ -36,6 +37,7 @@ type userRepository interface {
 	GetUserRoles(ctx context.Context, userID uint) ([]models.Role, error)
 	RemoveRoles(ctx context.Context, userID uint, rolesToRemove []int) error
 	ValidateRolesExist(ctx context.Context, rolesToAdd []int) ([]models.Role, error)
+	UpdateLastLogin(ctx context.Context, userID uint) error
 }
 
 type Service struct {
@@ -308,5 +310,12 @@ func (s *Service) Delete(ctx context.Context, request domain.DeleteUserRequest) 
 		return fmt.Errorf("delete user in repository: %w", err)
 	}
 
+	return nil
+}
+
+func (s *Service) UpdateLastLogin(ctx context.Context, user models.User) error {
+	if err := s.userRepository.UpdateLastLogin(context.Background(), user.ID); err != nil {
+		log.Printf("Warning: Failed to update last_login: %v", err)
+	}
 	return nil
 }

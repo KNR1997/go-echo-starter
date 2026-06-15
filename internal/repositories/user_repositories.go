@@ -7,6 +7,7 @@ import (
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -308,4 +309,12 @@ func (r *UserRepository) ValidateRolesExist(ctx context.Context, roleIDs []int) 
 	var roles []models.Role
 	err := r.db.WithContext(ctx).Where("id IN ?", roleIDs).Find(&roles).Error
 	return roles, err
+}
+
+func (r *UserRepository) UpdateLastLogin(ctx context.Context, userID uint) error {
+	now := time.Now()
+	return r.db.WithContext(ctx).
+		Model(&models.User{}).
+		Where("id = ?", userID).
+		Update("last_login", now).Error
 }

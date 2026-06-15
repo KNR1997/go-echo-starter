@@ -17,6 +17,7 @@ import (
 type userService interface {
 	GetByID(ctx context.Context, id uint) (models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (models.User, error)
+	UpdateLastLogin(ctx context.Context, user models.User) error
 }
 
 type tokenService interface {
@@ -58,6 +59,8 @@ func (s *Service) GenerateToken(ctx context.Context, request *requests.LoginRequ
 	}
 
 	response := responses.NewLoginResponse(accessToken, refreshToken, exp)
+
+	s.userService.UpdateLastLogin(ctx, user)
 
 	return response, nil
 }

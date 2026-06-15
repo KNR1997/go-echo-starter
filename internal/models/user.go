@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
@@ -15,4 +19,5 @@ type User struct {
 	IsSuperUser bool        `json:"is_superuser" gorm:"column:is_superuser;type:boolean;default:false"`
 	Roles       []Role      `json:"roles" gorm:"many2many:user_role;"`
 	Department  *Department `json:"department" gorm:"foreignKey:DeptId;references:ID"`
+	LastLogin   *time.Time  `json:"last_login" gorm:"column:last_login;type:datetime;default:null"`
 }
