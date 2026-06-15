@@ -18,6 +18,7 @@ type baseService interface {
 	ProfileUpdate(ctx context.Context, request domain.UpdateUserRequest) (*models.User, error)
 	PasswordUpdate(ctx context.Context, request domain.UpdatePasswordRequest) (*models.User, error)
 	InitiateAdmin(ctx context.Context) error
+	InitiateMenus(ctx context.Context) error
 }
 
 type BaseHandlers struct {
@@ -138,5 +139,14 @@ func (h *BaseHandlers) InitiateAdmin(c echo.Context) error {
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Initial admin created successfully")
+
+}
+
+func (h *BaseHandlers) InitiateMenus(c echo.Context) error {
+	if err := h.baseService.InitiateMenus(c.Request().Context()); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadGateway, err.Error())
+	}
+
+	return responses.MessageResponse(c, http.StatusCreated, "Initial menus successfully")
 
 }

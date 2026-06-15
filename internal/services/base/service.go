@@ -25,6 +25,8 @@ type roleRepository interface {
 
 type menuRepository interface {
 	GetMenus(ctx context.Context) ([]models.Menu, error)
+	Create(ctx context.Context, dept *models.Menu) error
+	ExistsByName(ctx context.Context, name string) (bool, error)
 }
 
 type Service struct {
@@ -200,4 +202,107 @@ func (s *Service) InitiateAdmin(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (s *Service) InitiateMenus(ctx context.Context) error {
+	menuTypeCatalog := "catalog"
+	menuTypeMenu := "menu"
+	redirect := "/settings/user"
+	userIcon := "material-symbols:person-outline-rounded"
+	roleIcon := "carbon:user-role"
+	apiIcon := "ant-design:api-outlined"
+	departmentIcon := "mingcute:department-line"
+	menuIcon := "material-symbols:list-alt-outline"
+
+	menus := []models.Menu{
+		{
+			ID:        1,
+			Name:      "Settings",
+			MenuType:  &menuTypeCatalog,
+			Icon:      &menuIcon,
+			Path:      "/settings",
+			Order:     1,
+			IsHidden:  false,
+			Keepalive: false,
+			Redirect:  &redirect,
+			Component: "Layout",
+		},
+		{
+			Name:      "users",
+			MenuType:  &menuTypeMenu,
+			Icon:      &userIcon,
+			Path:      "user",
+			Order:     1,
+			IsHidden:  false,
+			Keepalive: false,
+			Redirect:  nil,
+			Component: "/settings/user",
+			ParentID:  1,
+		},
+		{
+			Name:      "roles",
+			MenuType:  &menuTypeMenu,
+			Icon:      &roleIcon,
+			Path:      "role",
+			Order:     2,
+			IsHidden:  false,
+			Keepalive: false,
+			Redirect:  nil,
+			Component: "/settings/role",
+			ParentID:  1,
+		},
+		{
+			Name:      "apis",
+			MenuType:  &menuTypeMenu,
+			Icon:      &apiIcon,
+			Path:      "api",
+			Order:     3,
+			IsHidden:  false,
+			Keepalive: false,
+			Redirect:  nil,
+			Component: "/settings/api",
+			ParentID:  1,
+		},
+		{
+			Name:      "departments",
+			MenuType:  &menuTypeMenu,
+			Icon:      &departmentIcon,
+			Path:      "department",
+			Order:     4,
+			IsHidden:  false,
+			Keepalive: false,
+			Redirect:  nil,
+			Component: "/settings/department",
+			ParentID:  1,
+		},
+		{
+			Name:      "menus",
+			MenuType:  &menuTypeMenu,
+			Icon:      &menuIcon,
+			Path:      "menu",
+			Order:     5,
+			IsHidden:  false,
+			Keepalive: false,
+			Redirect:  nil,
+			Component: "/settings/menu",
+			ParentID:  1,
+		},
+	}
+
+	for _, menu := range menus {
+		exists, err := s.menuRepository.ExistsByName(ctx, menu.Name)
+		if err != nil {
+			return fmt.Errorf("check menu exists: %w", err)
+		}
+
+		if !exists {
+			if err := s.menuRepository.Create(ctx, &menu); err != nil {
+				return fmt.Errorf("create Menu in repository: %w", err)
+			}
+		}
+
+	}
+
+	return nil
+
 }
