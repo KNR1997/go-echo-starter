@@ -99,7 +99,7 @@ type CreateUserRequest struct {
 	IsSuperUser bool   `json:"is_superuser" example:"false"`
 	IsActive    bool   `json:"is_active" example:"true"`
 	RoleIds     []int  `json:"role_ids" validate:"required" example:"[1]"`
-	DeptId      int    `json:"dept_id" validate:"required" example:"1"`
+	DeptId      *int   `json:"dept_id" validate:"required" example:"1"`
 }
 
 func (createUserRequest CreateUserRequest) Validate() error {
@@ -121,17 +121,15 @@ type UpdateUserRequest struct {
 	IsSuperUser bool   `json:"is_superuser" example:"false"`
 	IsActive    bool   `json:"is_active" example:"true"`
 	RoleIds     []int  `json:"role_ids" example:"[1]"`
-	DeptId      int    `json:"dept_id" example:"1"`
+	DeptId      *int   `json:"dept_id" example:"1"`
 }
 
 func (request UpdateUserRequest) Validate() error {
 	return validation.ValidateStruct(&request,
 		validation.Field(&request.Username, validation.Required),
 		validation.Field(&request.Email, validation.Required),
-		validation.Field(&request.IsSuperUser, validation.Required),
-		validation.Field(&request.IsActive, validation.Required),
-		// validation.Field(&request.RoleIds, validation.Required),
-		// validation.Field(&request.DeptId, validation.Required),
+		validation.Field(&request.IsSuperUser),
+		validation.Field(&request.IsActive),
 	)
 }
 

@@ -8,7 +8,7 @@ type UpdateUserRequest struct {
 	IsSuperUser bool
 	IsActive    bool
 	RoleIds     []int
-	DeptId      int
+	DeptId      *int
 }
 
 type DeleteUserRequest struct {
