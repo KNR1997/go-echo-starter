@@ -79,14 +79,21 @@ func NewMenuTreeResponse(menus []models.Menu) *[]MenuResponse {
 		menuResponseList = append(menuResponseList, menuResponse)
 	}
 
-	// Build tree structure
+	// Build tree structure - identify parents first
 	var rootMenus []MenuResponse
+
+	// First pass: collect all root menus and ensure parents exist in map
 	for i := range menuResponseList {
 		menu := &menuResponseList[i]
 		if menu.ParentID == 0 {
-			// This is a root menu
 			rootMenus = append(rootMenus, *menu)
-		} else {
+		}
+	}
+
+	// Second pass: add children to their parents
+	for i := range menuResponseList {
+		menu := &menuResponseList[i]
+		if menu.ParentID != 0 {
 			// Find parent and add as child
 			if parent, exists := menuMap[uint(menu.ParentID)]; exists {
 				// Update parent's children
@@ -94,10 +101,18 @@ func NewMenuTreeResponse(menus []models.Menu) *[]MenuResponse {
 				parentCopy.Children = append(parentCopy.Children, *menu)
 				menuMap[uint(menu.ParentID)] = parentCopy
 
-				// Also update in the rootMenus if parent is root
+				// Update in rootMenus if parent is a root menu
 				for j := range rootMenus {
 					if rootMenus[j].ID == parent.ID {
 						rootMenus[j] = parentCopy
+						break
+					}
+				}
+
+				// Also update in menuResponseList to keep data consistent
+				for k := range menuResponseList {
+					if menuResponseList[k].ID == parent.ID {
+						menuResponseList[k] = parentCopy
 						break
 					}
 				}
