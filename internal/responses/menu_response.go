@@ -9,7 +9,7 @@ type MenuResponse struct {
 	ID          uint           `json:"id" example:"1"`
 	Name        string         `json:"name" example:"/roles/get"`
 	Remark      *string        `json:"remark" example:"{\"key\":\"value\"}"`
-	MenusType   *string        `json:"menu" example:"menu"`
+	MenusType   *string        `json:"menus_type" example:"menu"`
 	Icon        *string        `json:"icon" example:"fa-user"`
 	Path        string         `json:"path" example:"/roles"`
 	OrderNumber int            `json:"order" example:"1"`
