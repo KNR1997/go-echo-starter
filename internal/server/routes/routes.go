@@ -33,6 +33,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	engine.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
 		AllowOrigins: []string{
 			"http://localhost:5173",
+			"https://vue-echo-admin.vercel.app",
 		},
 		AllowMethods: []string{
 			echo.GET,
