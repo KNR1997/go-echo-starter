@@ -5,14 +5,14 @@ import (
 )
 
 type BasicRole struct {
-	Name string `json:"name" validate:"required" example:"Staff"`
-	Desc string `json:"desc" validate:"required" example:"Staff role"`
+	Name        string `json:"name" validate:"required" example:"Staff"`
+	Description string `json:"description" validate:"required" example:"Staff role"`
 }
 
 func (bp BasicRole) Validate() error {
 	return validation.ValidateStruct(&bp,
 		validation.Field(&bp.Name, validation.Required),
-		// validation.Field(&bp.Desc, validation.Required),
+		// validation.Field(&bp.Description, validation.Required),
 	)
 }
 

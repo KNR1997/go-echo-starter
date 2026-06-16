@@ -132,8 +132,8 @@ func (p *RoleHandlers) CreateRole(c echo.Context) error {
 	}
 
 	role := &models.Role{
-		Name: createRequest.Name,
-		Desc: createRequest.Desc,
+		Name:        createRequest.Name,
+		Description: createRequest.Description,
 	}
 
 	if err := p.roleService.Create(c.Request().Context(), role); err != nil {
@@ -165,9 +165,9 @@ func (p *RoleHandlers) UpdateRole(c echo.Context) error {
 	}
 
 	data := domain.UpdateRoleRequest{
-		RoleID: uint(roleID),
-		Name:   updateRequest.Name,
-		Desc:   updateRequest.Desc,
+		RoleID:      uint(roleID),
+		Name:        updateRequest.Name,
+		Description: updateRequest.Description,
 	}
 
 	if _, err := p.roleService.Update(c.Request().Context(), data); err != nil {

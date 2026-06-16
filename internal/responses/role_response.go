@@ -6,12 +6,12 @@ import (
 )
 
 type RoleResponse struct {
-	ID        uint      `json:"id" example:"1"`
-	Name      string    `json:"name" example:"Admin"`
-	Desc      string    `json:"desc" example:"some description"`
-	MenuIDs   []uint    `json:"menu_ids" example:"[1,2,3]"`
-	Apis      []ApiInfo `json:"apis"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          uint      `json:"id" example:"1"`
+	Name        string    `json:"name" example:"Admin"`
+	Description string    `json:"description" example:"some description"`
+	MenuIDs     []uint    `json:"menu_ids" example:"[1,2,3]"`
+	Apis        []ApiInfo `json:"apis"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type ApiInfo struct {
@@ -41,12 +41,12 @@ func NewRoleResponse(roles []models.Role) *[]RoleResponse {
 		}
 
 		roleResponse = append(roleResponse, RoleResponse{
-			ID:        roles[i].ID,
-			Name:      roles[i].Name,
-			Desc:      roles[i].Desc,
-			MenuIDs:   menuIDs,
-			Apis:      apis,
-			CreatedAt: roles[i].CreatedAt,
+			ID:          roles[i].ID,
+			Name:        roles[i].Name,
+			Description: roles[i].Description,
+			MenuIDs:     menuIDs,
+			Apis:        apis,
+			CreatedAt:   roles[i].CreatedAt,
 		})
 	}
 
@@ -61,10 +61,10 @@ func NewSingleRoleResponse(role models.Role) *RoleResponse {
 	}
 
 	return &RoleResponse{
-		ID:        role.ID,
-		Name:      role.Name,
-		Desc:      role.Desc,
-		MenuIDs:   menuIDs,
-		CreatedAt: role.CreatedAt,
+		ID:          role.ID,
+		Name:        role.Name,
+		Description: role.Description,
+		MenuIDs:     menuIDs,
+		CreatedAt:   role.CreatedAt,
 	}
 }

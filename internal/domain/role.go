@@ -1,9 +1,9 @@
 package domain
 
 type UpdateRoleRequest struct {
-	RoleID uint
-	Name   string
-	Desc   string
+	RoleID      uint
+	Name        string
+	Description string
 }
 
 type DeleteRoleRequest struct {

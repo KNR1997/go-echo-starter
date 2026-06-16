@@ -80,7 +80,7 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateRoleRequest) 
 	}
 
 	role.Name = request.Name
-	role.Desc = request.Desc
+	role.Description = request.Description
 
 	if err := s.roleRepository.Update(ctx, &role); err != nil {
 		return nil, fmt.Errorf("update role in repository: %w", err)
