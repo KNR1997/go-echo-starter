@@ -103,7 +103,6 @@ func run() error {
 	verifier := provider.Verifier(&oidc.Config{ClientID: cfg.OAuth.ClientID})
 
 	tokenService := token.NewService(
-		time.Now,
 		cfg.Auth.AccessTokenDuration,
 		cfg.Auth.RefreshTokenDuration,
 		[]byte(cfg.Auth.AccessSecret),

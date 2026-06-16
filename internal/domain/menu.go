@@ -4,7 +4,7 @@ type UpdateMenuRequest struct {
 	MenuID    uint
 	Name      string
 	Remark    *string
-	MenuType  *string
+	MenusType *string
 	Icon      *string
 	Path      string
 	Order     int

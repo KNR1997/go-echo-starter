@@ -17,6 +17,8 @@ type DBConfig struct {
 	Name     string `env:"DB_NAME"`
 	Host     string `env:"DB_HOST"`
 	Port     string `env:"DB_PORT"`
+	SSLMode  string `env:"DB_SSLMODE" envDefault:"disable"` // Add this field
+	TimeZone string `env:"DB_TIMEZONE" envDefault:"UTC"`    // Add this field
 }
 
 type AuthConfig struct {

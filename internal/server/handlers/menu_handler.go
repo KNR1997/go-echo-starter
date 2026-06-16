@@ -96,17 +96,17 @@ func (p *MenuHandlers) CreateMenu(c echo.Context) error {
 	}
 
 	menu := &models.Menu{
-		Name:      createRequest.Name,
-		Remark:    createRequest.Remark,
-		MenuType:  createRequest.MenuType,
-		Icon:      createRequest.Icon,
-		Path:      createRequest.Path,
-		Order:     createRequest.Order,
-		ParentID:  createRequest.ParentID,
-		IsHidden:  createRequest.IsHidden,
-		Component: createRequest.Component,
-		Keepalive: createRequest.Keepalive,
-		Redirect:  createRequest.Redirect,
+		Name:        createRequest.Name,
+		Remark:      createRequest.Remark,
+		MenusType:   createRequest.MenusType,
+		Icon:        createRequest.Icon,
+		Path:        createRequest.Path,
+		OrderNumber: createRequest.Order,
+		ParentID:    createRequest.ParentID,
+		IsHidden:    createRequest.IsHidden,
+		Component:   createRequest.Component,
+		Keepalive:   createRequest.Keepalive,
+		Redirect:    createRequest.Redirect,
 	}
 
 	if err := p.menuService.Create(c.Request().Context(), menu); err != nil {
@@ -141,7 +141,7 @@ func (p *MenuHandlers) UpdateMenu(c echo.Context) error {
 		MenuID:    uint(menuID),
 		Name:      updateRequest.Name,
 		Remark:    updateRequest.Remark,
-		MenuType:  updateRequest.MenuType,
+		MenusType: updateRequest.MenusType,
 		Icon:      updateRequest.Icon,
 		Path:      updateRequest.Path,
 		Order:     updateRequest.Order,

@@ -70,6 +70,8 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 
 	privateAPI.POST("/login", handlers.AuthHandler.Login)
 	privateAPI.POST("/register", handlers.RegisterHandler.Register)
+	privateAPI.POST("/base/initiateAdmin", handlers.BaseHandlers.InitiateAdmin)
+	privateAPI.POST("/base/initiateMenus", handlers.BaseHandlers.InitiateMenus)
 
 	// Authorized API route initialization.
 	//
@@ -85,37 +87,35 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	authorizedAPI.GET("/base/me", handlers.BaseHandlers.GetMeDetails)
 	authorizedAPI.POST("/base/profileUpdate", handlers.BaseHandlers.ProfileUpdate)
 	authorizedAPI.POST("/base/passwordUpdate", handlers.BaseHandlers.PasswordUpdate)
-	privateAPI.POST("/base/initiateAdmin", handlers.BaseHandlers.InitiateAdmin)
-	privateAPI.POST("/base/initiateMenus", handlers.BaseHandlers.InitiateMenus)
 
-	privateAPI.GET("/posts", handlers.PostHandler.GetPostPaginated)
+	authorizedAPI.GET("/posts", handlers.PostHandler.GetPostPaginated)
 	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
 	authorizedAPI.PUT("/posts/:id", handlers.PostHandler.UpdatePost)
 	authorizedAPI.DELETE("/posts/:id", handlers.PostHandler.DeletePost)
 
-	privateAPI.GET("/users", handlers.UserHandlers.GetUserPaginated)
+	authorizedAPI.GET("/users", handlers.UserHandlers.GetUserPaginated)
 	authorizedAPI.POST("/users", handlers.UserHandlers.CreateUser)
 	authorizedAPI.PUT("/users/:id", handlers.UserHandlers.UpdateUser)
 	authorizedAPI.PATCH("/users/:id", handlers.UserHandlers.PatchUser)
 	authorizedAPI.DELETE("/users/:id", handlers.UserHandlers.DeleteUser)
 
-	privateAPI.GET("/roles", handlers.RoleHandlers.GetRolePaginated)
+	authorizedAPI.GET("/roles", handlers.RoleHandlers.GetRolePaginated)
 	authorizedAPI.POST("/roles", handlers.RoleHandlers.CreateRole)
 	authorizedAPI.PUT("/roles/:id", handlers.RoleHandlers.UpdateRole)
 	authorizedAPI.DELETE("/roles/:id", handlers.RoleHandlers.DeleteRole)
 	authorizedAPI.POST("/roles/:id/authorize", handlers.RoleHandlers.AuthorizeRole)
 
-	privateAPI.GET("/departments", handlers.DepartmentHandlers.GetDepartmentPaginated)
+	authorizedAPI.GET("/departments", handlers.DepartmentHandlers.GetDepartmentPaginated)
 	authorizedAPI.POST("/departments", handlers.DepartmentHandlers.CreateDepartment)
 	authorizedAPI.PUT("/departments/:id", handlers.DepartmentHandlers.UpdateDepartment)
 	authorizedAPI.DELETE("/departments/:id", handlers.DepartmentHandlers.DeleteDepartment)
 
-	privateAPI.GET("/apis", handlers.ApiHandlers.GetApiPaginated)
+	authorizedAPI.GET("/apis", handlers.ApiHandlers.GetApiPaginated)
 	authorizedAPI.POST("/apis", handlers.ApiHandlers.CreateApi)
 	authorizedAPI.PUT("/apis/:id", handlers.ApiHandlers.UpdateApi)
 	authorizedAPI.DELETE("/apis/:id", handlers.ApiHandlers.DeleteApi)
 
-	privateAPI.GET("/menus", handlers.MenuHandlers.GetMenuPaginated)
+	authorizedAPI.GET("/menus", handlers.MenuHandlers.GetMenuPaginated)
 	authorizedAPI.POST("/menus", handlers.MenuHandlers.CreateMenu)
 	authorizedAPI.PUT("/menus/:id", handlers.MenuHandlers.UpdateMenu)
 	authorizedAPI.PATCH("/menus/:id", handlers.MenuHandlers.PatchMenu)

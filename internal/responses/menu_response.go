@@ -6,21 +6,21 @@ import (
 )
 
 type MenuResponse struct {
-	ID        uint           `json:"id" example:"1"`
-	Name      string         `json:"name" example:"/roles/get"`
-	Remark    *string        `json:"remark" example:"{\"key\":\"value\"}"`
-	MenuType  *string        `json:"menu_type" example:"menu"`
-	Icon      *string        `json:"icon" example:"fa-user"`
-	Path      string         `json:"path" example:"/roles"`
-	Order     int            `json:"order" example:"1"`
-	ParentID  int            `json:"parent_id" example:"0"`
-	IsHidden  bool           `json:"is_hidden" example:"false"`
-	Component string         `json:"component" example:"views/RoleList"`
-	Keepalive bool           `json:"keepalive" example:"true"`
-	Redirect  *string        `json:"redirect" example:"/dashboard"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	Children  []MenuResponse `json:"children,omitempty"` // omitempty to hide empty children
+	ID          uint           `json:"id" example:"1"`
+	Name        string         `json:"name" example:"/roles/get"`
+	Remark      *string        `json:"remark" example:"{\"key\":\"value\"}"`
+	MenusType   *string        `json:"menu" example:"menu"`
+	Icon        *string        `json:"icon" example:"fa-user"`
+	Path        string         `json:"path" example:"/roles"`
+	OrderNumber int            `json:"order" example:"1"`
+	ParentID    int            `json:"parent_id" example:"0"`
+	IsHidden    bool           `json:"is_hidden" example:"false"`
+	Component   string         `json:"component" example:"views/RoleList"`
+	Keepalive   bool           `json:"keepalive" example:"true"`
+	Redirect    *string        `json:"redirect" example:"/dashboard"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	Children    []MenuResponse `json:"children,omitempty"` // omitempty to hide empty children
 }
 
 // NewMenuResponse returns a flat list of menu responses
@@ -29,21 +29,21 @@ func NewMenuResponse(menus []models.Menu) *[]MenuResponse {
 
 	for i := range menus {
 		menuResponse = append(menuResponse, MenuResponse{
-			ID:        menus[i].ID,
-			Name:      menus[i].Name,
-			Remark:    menus[i].Remark,
-			MenuType:  menus[i].MenuType,
-			Icon:      menus[i].Icon,
-			Path:      menus[i].Path,
-			Order:     menus[i].Order,
-			ParentID:  menus[i].ParentID,
-			IsHidden:  menus[i].IsHidden,
-			Component: menus[i].Component,
-			Keepalive: menus[i].Keepalive,
-			Redirect:  menus[i].Redirect,
-			CreatedAt: menus[i].CreatedAt,
-			UpdatedAt: menus[i].UpdatedAt,
-			Children:  []MenuResponse{}, // Initialize empty slice
+			ID:          menus[i].ID,
+			Name:        menus[i].Name,
+			Remark:      menus[i].Remark,
+			MenusType:   menus[i].MenusType,
+			Icon:        menus[i].Icon,
+			Path:        menus[i].Path,
+			OrderNumber: menus[i].OrderNumber,
+			ParentID:    menus[i].ParentID,
+			IsHidden:    menus[i].IsHidden,
+			Component:   menus[i].Component,
+			Keepalive:   menus[i].Keepalive,
+			Redirect:    menus[i].Redirect,
+			CreatedAt:   menus[i].CreatedAt,
+			UpdatedAt:   menus[i].UpdatedAt,
+			Children:    []MenuResponse{}, // Initialize empty slice
 		})
 	}
 
@@ -59,21 +59,21 @@ func NewMenuTreeResponse(menus []models.Menu) *[]MenuResponse {
 	// Create a map for quick lookup
 	for i := range menus {
 		menuResponse := MenuResponse{
-			ID:        menus[i].ID,
-			Name:      menus[i].Name,
-			Remark:    menus[i].Remark,
-			MenuType:  menus[i].MenuType,
-			Icon:      menus[i].Icon,
-			Path:      menus[i].Path,
-			Order:     menus[i].Order,
-			ParentID:  menus[i].ParentID,
-			IsHidden:  menus[i].IsHidden,
-			Component: menus[i].Component,
-			Keepalive: menus[i].Keepalive,
-			Redirect:  menus[i].Redirect,
-			CreatedAt: menus[i].CreatedAt,
-			UpdatedAt: menus[i].UpdatedAt,
-			Children:  []MenuResponse{},
+			ID:          menus[i].ID,
+			Name:        menus[i].Name,
+			Remark:      menus[i].Remark,
+			MenusType:   menus[i].MenusType,
+			Icon:        menus[i].Icon,
+			Path:        menus[i].Path,
+			OrderNumber: menus[i].OrderNumber,
+			ParentID:    menus[i].ParentID,
+			IsHidden:    menus[i].IsHidden,
+			Component:   menus[i].Component,
+			Keepalive:   menus[i].Keepalive,
+			Redirect:    menus[i].Redirect,
+			CreatedAt:   menus[i].CreatedAt,
+			UpdatedAt:   menus[i].UpdatedAt,
+			Children:    []MenuResponse{},
 		}
 		menuMap[menus[i].ID] = menuResponse
 		menuResponseList = append(menuResponseList, menuResponse)
@@ -142,21 +142,21 @@ func NewMenuTreeResponseOptimized(menus []models.Menu) *[]MenuResponse {
 
 		for _, menu := range menuMap[parentID] {
 			menuResponse := MenuResponse{
-				ID:        menu.ID,
-				Name:      menu.Name,
-				Remark:    menu.Remark,
-				MenuType:  menu.MenuType,
-				Icon:      menu.Icon,
-				Path:      menu.Path,
-				Order:     menu.Order,
-				ParentID:  menu.ParentID,
-				IsHidden:  menu.IsHidden,
-				Component: menu.Component,
-				Keepalive: menu.Keepalive,
-				Redirect:  menu.Redirect,
-				CreatedAt: menu.CreatedAt,
-				UpdatedAt: menu.UpdatedAt,
-				Children:  buildTree(int(menu.ID)), // Recursively get children
+				ID:          menu.ID,
+				Name:        menu.Name,
+				Remark:      menu.Remark,
+				MenusType:   menu.MenusType,
+				Icon:        menu.Icon,
+				Path:        menu.Path,
+				OrderNumber: menu.OrderNumber,
+				ParentID:    menu.ParentID,
+				IsHidden:    menu.IsHidden,
+				Component:   menu.Component,
+				Keepalive:   menu.Keepalive,
+				Redirect:    menu.Redirect,
+				CreatedAt:   menu.CreatedAt,
+				UpdatedAt:   menu.UpdatedAt,
+				Children:    buildTree(int(menu.ID)), // Recursively get children
 			}
 			result = append(result, menuResponse)
 			menuResponseMap[menu.ID] = &result[len(result)-1]

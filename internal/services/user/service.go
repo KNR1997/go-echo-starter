@@ -58,10 +58,12 @@ func (s *Service) Register(ctx context.Context, request *requests.RegisterReques
 	}
 
 	user := &models.User{
-		Email:    request.Email,
-		Name:     request.Name,
-		Username: request.Username,
-		Password: string(encryptedPassword),
+		Email:       request.Email,
+		Name:        request.Name,
+		Username:    request.Username,
+		IsActive:    true,
+		IsSuperUser: true,
+		Password:    string(encryptedPassword),
 	}
 
 	if err := s.userRepository.Create(ctx, user); err != nil {
@@ -205,7 +207,7 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateUserRequest) 
 
 	user.Username = request.UserName
 	user.Email = request.Email
-	user.IsSuperUser = request.IsSuperUser
+	// user.IsSuperUser = request.IsSuperUser # Todo -> disable IsSuperUser update
 	user.IsActive = request.IsActive
 	if request.DeptId != nil {
 		user.DeptId = request.DeptId

@@ -1,0 +1,47 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-echo-starter
+    ports:
+      - "${EXPOSE_PORT:-7788}:${PORT:-7788}"
+    environment:
+      # Database Configuration
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SSLMODE: ${DB_SSLMODE:-disable}
+      DB_DRIVER: ${DB_DRIVER:-postgres}
+      DB_TIMEZONE: ${DB_TIMEZONE:-UTC}
+      
+      # Server Configuration
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-7788}
+      EXPOSE_PORT: ${EXPOSE_PORT:-7788}
+      
+      # Auth Configuration
+      ACCESS_SECRET: ${ACCESS_SECRET}
+      REFRESH_SECRET: ${REFRESH_SECRET}
+      ACCESS_SECRET_DURATION: ${ACCESS_SECRET_DURATION:-2h}
+      REFRESH_SECRET_DURATION: ${REFRESH_SECRET_DURATION:-168h}
+      
+      # OAuth Configuration
+      OPEN_ID_CLIENT_ID: ${OPEN_ID_CLIENT_ID}
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_APPLICATION: ${LOG_APPLICATION:-go-echo-starter}
+      LOG_ADD_SOURCE: ${LOG_ADD_SOURCE:-false}
+      
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

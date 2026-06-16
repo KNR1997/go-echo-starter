@@ -1,0 +1,22 @@
+FROM alpine:3.19
+
+# Install runtime dependencies (bash and curl are needed for the install script)
+RUN apk add --no-cache ca-certificates tzdata bash curl
+
+# Install goose using the official install script
+RUN curl -fsSL \
+    https://raw.githubusercontent.com/pressly/goose/master/install.sh \
+    | sh
+
+# The script installs goose to /usr/local/bin by default, so it will be in your PATH.
+
+WORKDIR /migrations
+
+# Copy migration files
+COPY migrations/ ./migrations/
+
+# Copy entrypoint script
+COPY scripts/migrate.sh /migrate.sh
+RUN chmod +x /migrate.sh
+
+ENTRYPOINT ["/migrate.sh"]

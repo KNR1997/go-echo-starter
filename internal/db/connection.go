@@ -5,12 +5,13 @@ import (
 
 	"go-echo-starter/internal/config"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func NewGormDB(cfg config.DBConfig) (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.Open(dsn(cfg)), &gorm.Config{
+	// Use PostgreSQL driver instead of MySQL
+	db, err := gorm.Open(postgres.Open(dsn(cfg)), &gorm.Config{
 		Logger: newLoggerAdapter(),
 	})
 	if err != nil {
@@ -21,8 +22,9 @@ func NewGormDB(cfg config.DBConfig) (*gorm.DB, error) {
 }
 
 func dsn(c config.DBConfig) string {
+	// PostgreSQL DSN format
 	return fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		c.User, c.Password, c.Host, c.Port, c.Name,
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+		c.Host, c.User, c.Password, c.Name, c.Port,
 	)
 }

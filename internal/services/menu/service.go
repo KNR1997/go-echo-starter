@@ -67,10 +67,10 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateMenuRequest) 
 	}
 
 	menu.Name = request.Name
-	menu.MenuType = request.MenuType
+	menu.MenusType = request.MenusType
 	menu.Icon = request.Icon
 	menu.Path = request.Path
-	menu.Order = request.Order
+	menu.OrderNumber = request.Order
 	menu.ParentID = request.ParentID
 	menu.IsHidden = request.IsHidden
 	menu.Component = request.Component

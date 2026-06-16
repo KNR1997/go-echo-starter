@@ -152,3 +152,33 @@ func (r *ApiRepository) Delete(ctx context.Context, api *models.Api) error {
 
 	return nil
 }
+
+func (r *ApiRepository) GetByPathAndMethod(ctx context.Context, path, method string) (models.Api, error) {
+	var api models.Api
+	err := r.db.WithContext(ctx).
+		Where("path = ? AND method = ?", path, method).
+		First(&api).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return models.Api{}, errors.Join(models.ErrPostNotFound, err)
+	} else if err != nil {
+		return models.Api{}, fmt.Errorf("execute select api by id query: %w", err)
+	}
+
+	return api, nil
+}
+
+func (r *ApiRepository) HasPermission(ctx context.Context, roleID uint, path, method string) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&models.Role{ID: roleID}).
+		Where("id = ?", roleID).
+		Where("EXISTS (SELECT 1 FROM role_api WHERE role_id = roles.id AND api_id IN (SELECT id FROM apis WHERE path = ? AND method = ?))", path, method).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}

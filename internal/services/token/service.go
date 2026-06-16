@@ -21,7 +21,6 @@ type JwtCustomRefreshClaims struct {
 }
 
 type Service struct {
-	now                  func() time.Time
 	accessTokenDuration  time.Duration
 	refreshTokenDuration time.Duration
 	accessTokenSecret    []byte
@@ -29,14 +28,12 @@ type Service struct {
 }
 
 func NewService(
-	now func() time.Time,
 	accessTokenDuration time.Duration,
 	refreshTokenDuration time.Duration,
 	accessSecret []byte,
 	refreshSecret []byte,
 ) *Service {
 	return &Service{
-		now:                  now,
 		accessTokenDuration:  accessTokenDuration,
 		refreshTokenDuration: refreshTokenDuration,
 		accessTokenSecret:    accessSecret,
@@ -45,7 +42,7 @@ func NewService(
 }
 
 func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (accessToken string, expires int64, err error) {
-	expiresAt := s.now().Add(s.accessTokenDuration)
+	expiresAt := time.Now().Add(s.accessTokenDuration)
 
 	claims := &JwtCustomClaims{
 		Name: user.Name,
@@ -66,7 +63,7 @@ func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (acces
 }
 
 func (s *Service) CreateRefreshToken(_ context.Context, user *models.User) (string, error) {
-	expiresAt := s.now().Add(s.refreshTokenDuration)
+	expiresAt := time.Now().Add(s.refreshTokenDuration)
 
 	claims := &JwtCustomRefreshClaims{
 		ID: user.ID,

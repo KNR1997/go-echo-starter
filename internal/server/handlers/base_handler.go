@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"go-echo-starter/internal/domain"
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/requests"
 	"go-echo-starter/internal/responses"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -143,10 +145,11 @@ func (h *BaseHandlers) InitiateAdmin(c echo.Context) error {
 }
 
 func (h *BaseHandlers) InitiateMenus(c echo.Context) error {
+	slog.Debug("Executing InitiateMenus handler")
 	if err := h.baseService.InitiateMenus(c.Request().Context()); err != nil {
+		// Log the full error with stack trace if possible
+		slog.Error("Server error", "err", err.Error(), "type", fmt.Sprintf("%T", err))
 		return responses.ErrorResponse(c, http.StatusBadGateway, err.Error())
 	}
-
 	return responses.MessageResponse(c, http.StatusCreated, "Initial menus successfully")
-
 }

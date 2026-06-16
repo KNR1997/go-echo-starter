@@ -20,6 +20,8 @@ type apiRepository interface {
 	Create(ctx context.Context, dept *models.Api) error
 	Update(ctx context.Context, dept *models.Api) error
 	Delete(ctx context.Context, post *models.Api) error
+	GetByPathAndMethod(ctx context.Context, path, method string) (models.Api, error)
+	HasPermission(ctx context.Context, roleID uint, path, method string) (bool, error)
 }
 
 type Service struct {
@@ -99,4 +101,20 @@ func (s *Service) Delete(ctx context.Context, request domain.DeleteApiRequest) e
 	}
 
 	return nil
+}
+
+func (s *Service) GetApiByPathAndMethod(ctx context.Context, path, method string) (*models.Api, error) {
+	api, err := s.apiRepository.GetByPathAndMethod(ctx, path, method)
+	if err != nil {
+		return nil, err
+	}
+	return &api, nil
+}
+
+func (s *Service) HasPermission(ctx context.Context, roleID uint, path, method string) (bool, error) {
+	hasPermission, err := s.apiRepository.HasPermission(ctx, roleID, path, method)
+	if err != nil {
+		return false, err
+	}
+	return hasPermission, nil
 }
