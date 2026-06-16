@@ -173,7 +173,7 @@ func (r *ApiRepository) HasPermission(ctx context.Context, roleID uint, path, me
 	err := r.db.WithContext(ctx).
 		Model(&models.Role{ID: roleID}).
 		Where("id = ?", roleID).
-		Where("EXISTS (SELECT 1 FROM role_api WHERE role_id = roles.id AND api_id IN (SELECT id FROM apis WHERE path = ? AND method = ?))", path, method).
+		Where("EXISTS (SELECT 1 FROM role_apis WHERE role_id = roles.id AND api_id IN (SELECT id FROM apis WHERE path = ? AND method = ?))", path, method).
 		Count(&count).Error
 
 	if err != nil {
