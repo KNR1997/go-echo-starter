@@ -11,8 +11,7 @@ type BasicRole struct {
 
 func (bp BasicRole) Validate() error {
 	return validation.ValidateStruct(&bp,
-		validation.Field(&bp.Name, validation.Required),
-		// validation.Field(&bp.Description, validation.Required),
+		validation.Field(&bp.Name, validation.Required, validation.Length(1, 20)),
 	)
 }
 
