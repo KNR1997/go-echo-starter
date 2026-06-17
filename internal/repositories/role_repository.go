@@ -229,3 +229,22 @@ func (r *RoleRepository) GetRoleMenus(ctx context.Context, roleID uint) ([]model
 	err := r.db.WithContext(ctx).Model(&role).Association("Menus").Find(&menus)
 	return menus, err
 }
+
+func (r *RoleRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
+	var role models.Role
+
+	err := r.db.WithContext(ctx).
+		Select("id").
+		Where("name = ?", name).
+		Take(&role).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("execute exists by name query: %w", err)
+	}
+
+	return true, nil
+}
