@@ -18,11 +18,12 @@ type roleRepository interface {
 		searchConditions []utils.SearchCondition,
 		searchJoin string,
 	) ([]models.Role, int64, error)
-	Create(ctx context.Context, dept *models.Role) error
-	Update(ctx context.Context, dept *models.Role) error
+	Create(ctx context.Context, role *models.Role) error
+	Update(ctx context.Context, role *models.Role) error
 	Delete(ctx context.Context, post *models.Role) error
 	AssignMenus(ctx context.Context, roleID uint, MenuIDs []int) error
 	AssignApis(ctx context.Context, roleID uint, ApiIDs []int) error
+	ExistsByName(ctx context.Context, name string) (bool, error)
 }
 
 type Service struct {
@@ -65,8 +66,17 @@ func (s *Service) GetRolePaginated(
 	return roles, total, nil
 }
 
-func (s *Service) Create(ctx context.Context, dept *models.Role) error {
-	if err := s.roleRepository.Create(ctx, dept); err != nil {
+func (s *Service) Create(ctx context.Context, role *models.Role) error {
+	exists, err := s.roleRepository.ExistsByName(ctx, role.Name)
+	if err != nil {
+		return fmt.Errorf("check role exists: %w", err)
+	}
+
+	if exists {
+		return fmt.Errorf("role name already exists")
+	}
+
+	if err := s.roleRepository.Create(ctx, role); err != nil {
 		return fmt.Errorf("create role in repository: %w", err)
 	}
 
@@ -77,6 +87,17 @@ func (s *Service) Update(ctx context.Context, request domain.UpdateRoleRequest) 
 	role, err := s.roleRepository.GetById(ctx, request.RoleID)
 	if err != nil {
 		return nil, fmt.Errorf("get stored role from repository: %w", err)
+	}
+
+	if role.Name != request.Name {
+		exists, err := s.roleRepository.ExistsByName(ctx, request.Name)
+		if err != nil {
+			return nil, fmt.Errorf("check role exists: %w", err)
+		}
+
+		if exists {
+			return nil, fmt.Errorf("role name already exists")
+		}
 	}
 
 	role.Name = request.Name

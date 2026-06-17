@@ -137,6 +137,10 @@ func (p *RoleHandlers) CreateRole(c echo.Context) error {
 	}
 
 	if err := p.roleService.Create(c.Request().Context(), role); err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			return responses.ErrorResponse(c, http.StatusConflict, err.Error())
+		}
+
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create role: "+err.Error())
 	}
 
@@ -171,6 +175,10 @@ func (p *RoleHandlers) UpdateRole(c echo.Context) error {
 	}
 
 	if _, err := p.roleService.Update(c.Request().Context(), data); err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			return responses.ErrorResponse(c, http.StatusConflict, err.Error())
+		}
+
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to update role: "+err.Error())
 	}
 
