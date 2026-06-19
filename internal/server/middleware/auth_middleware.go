@@ -32,6 +32,7 @@ func NewAuthMiddleware(accessSecret string) echo.MiddlewareFunc {
 			// Enrich logs and context execution with user ID.
 			ctx := c.Request().Context()
 			ctx = slogx.ContextWithUserID(ctx, claims.ID)
+			ctx = slogx.ContextWithUsername(ctx, claims.Username)
 			c.SetRequest(c.Request().WithContext(ctx))
 		},
 		ContextKey: authContextKey,
