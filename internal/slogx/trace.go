@@ -123,3 +123,75 @@ func ContextWithBaggage(ctx context.Context, key string, value any) context.Cont
 func ContextWithUserID(ctx context.Context, userID uint) context.Context {
 	return ContextWithBaggage(ctx, "user_id", userID)
 }
+
+// UserIDFromContext retrieves the user ID from the context baggage.
+func UserIDFromContext(ctx context.Context) int {
+	t, ok := traceFromContext(ctx)
+	if !ok {
+		fmt.Println("traceFromContext not ok")
+		return 0
+	}
+
+	userID, ok := t.baggage["user_id"]
+	if !ok {
+		fmt.Println("userID not ok")
+		return 0
+	}
+
+	// Handle different possible types
+	switch v := userID.(type) {
+	case int:
+		return v
+	case uint:
+		return int(v)
+	case int64:
+		return int(v)
+	case float64:
+		return int(v)
+	default:
+		return 0
+	}
+}
+
+// ContextWithUsername appends username field to all log messages.
+func ContextWithUsername(ctx context.Context, username string) context.Context {
+	return ContextWithBaggage(ctx, "username", username)
+}
+
+// UsernameFromContext retrieves the username from the context baggage.
+func UsernameFromContext(ctx context.Context) string {
+	t, ok := traceFromContext(ctx)
+	if !ok {
+		return ""
+	}
+
+	username, ok := t.baggage["username"]
+	if !ok {
+		return ""
+	}
+
+	if str, ok := username.(string); ok {
+		return str
+	}
+	return ""
+}
+
+// TraceIDFromContext retrieves the trace ID from the context.
+func TraceIDFromContext(ctx context.Context) string {
+	t, ok := traceFromContext(ctx)
+	if !ok {
+		return ""
+	}
+	return t.traceID
+}
+
+// ContextWithTraceID sets a trace ID in the context.
+func ContextWithTraceID(ctx context.Context, traceID string) context.Context {
+	// Create a new trace with the given trace ID
+	t := trace{
+		traceID: traceID,
+		spanID:  &atomic.Int64{},
+		baggage: make(map[string]any),
+	}
+	return contextWithTrace(ctx, t)
+}
