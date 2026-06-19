@@ -21,13 +21,6 @@ type AuditLog struct {
 	UpdatedAt    time.Time       `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
-type AuditLogSimple struct {
-	ID       uint   `gorm:"primaryKey" json:"id"`
-	UserID   int    `gorm:"index;not null" json:"user_id"`
-	Username string `gorm:"size:64;index;default:''" json:"username"`
-	Module   string `gorm:"size:64;index;default:''" json:"module"`
-}
-
 func (AuditLog) TableName() string {
 	return "audit_logs"
 }

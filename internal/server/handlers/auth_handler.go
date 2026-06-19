@@ -6,7 +6,6 @@ import (
 	"go-echo-starter/internal/models"
 	"go-echo-starter/internal/requests"
 	"go-echo-starter/internal/responses"
-	"log/slog"
 
 	"net/http"
 
@@ -41,8 +40,6 @@ func NewAuthHandler(authService authService) *AuthHandler {
 //	@Failure		401		{object}	responses.Error
 //	@Router			/login [post]
 func (h *AuthHandler) Login(c echo.Context) error {
-	slog.Info("Executing Login handler+++++++++++++++=///////////////////////////")
-
 	var request requests.LoginRequest
 	if err := c.Bind(&request); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
