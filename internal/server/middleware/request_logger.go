@@ -51,10 +51,11 @@ func (l *requestLogger) handle(next echo.HandlerFunc) echo.HandlerFunc {
 
 		slog.Log(c.Request().Context(), level, "Request", slog.Group("http", attrs...))
 
-		if errNext != nil {
-			return fmt.Errorf("handle request with request logger: %w", errNext)
-		}
+		// if errNext != nil {
+		// 	return fmt.Errorf("handle request with request logger: %w", errNext)
+		// }
 
-		return nil
+		// return nil
+		return errNext
 	}
 }
