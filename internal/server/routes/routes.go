@@ -20,11 +20,13 @@ type Handlers struct {
 	DepartmentHandlers *handlers.DepartmentHandlers
 	ApiHandlers        *handlers.ApiHandlers
 	MenuHandlers       *handlers.MenuHandlers
+	AudtiLogHandlers   *handlers.AudtiLogHandlers
 	BaseHandlers       *handlers.BaseHandlers
 
 	AuthMiddleware            echo.MiddlewareFunc
 	RequestLoggerMiddleware   echo.MiddlewareFunc
 	RequestDebuggerMiddleware echo.MiddlewareFunc
+	AuditLogMiddleware        echo.MiddlewareFunc
 }
 
 func ConfigureRoutes(handlers Handlers) *echo.Echo {
@@ -80,7 +82,9 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	// before they can be accessed.
 	authorizedAPI := api.Group(
 		"",
+		handlers.RequestLoggerMiddleware,
 		handlers.AuthMiddleware,
+		handlers.AuditLogMiddleware,
 		handlers.RequestDebuggerMiddleware,
 	)
 
@@ -121,6 +125,8 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	authorizedAPI.PUT("/menus/:id", handlers.MenuHandlers.UpdateMenu)
 	authorizedAPI.PATCH("/menus/:id", handlers.MenuHandlers.PatchMenu)
 	authorizedAPI.DELETE("/menus/:id", handlers.MenuHandlers.DeleteMenu)
+
+	authorizedAPI.GET("/auditLogs", handlers.AudtiLogHandlers.GetAuditLogPaginated)
 
 	return engine
 
