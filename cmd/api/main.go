@@ -13,6 +13,7 @@ import (
 	"go-echo-starter/internal/server/middleware"
 	"go-echo-starter/internal/server/routes"
 	"go-echo-starter/internal/services/api"
+	"go-echo-starter/internal/services/audit"
 	"go-echo-starter/internal/services/auth"
 	"go-echo-starter/internal/services/base"
 	"go-echo-starter/internal/services/dept"
@@ -93,6 +94,9 @@ func run() error {
 	menuRepository := repositories.NewMenuRepository(gormDB)
 	menuService := menu.NewService(menuRepository)
 
+	auditLogRepository := repositories.NewAuditLogRepository(gormDB)
+	auditLogSerivce := audit.NewService(auditLogRepository)
+
 	baseService := base.NewService(userRepository, roleRepository, menuRepository)
 
 	provider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
@@ -122,10 +126,12 @@ func run() error {
 	deptHandler := handlers.NewDepartmentHandlers(deptService)
 	apiHandler := handlers.NewApiHandlers(apiService)
 	menuHandler := handlers.NewMenuHandlers(menuService)
+	auditLogHandler := handlers.NewAudtiLogHandlers(auditLogSerivce)
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.Auth.AccessSecret)
 	reguestLoggerMiddleware := middleware.NewRequestLogger(slogx.NewTraceStarter(uuid.NewV7))
 	requestDebuggerMiddleware := middleware.NewRequestDebugger()
+	auditLogMiddleware := middleware.NewAuditLogMiddleware(gormDB)
 
 	engine := routes.ConfigureRoutes(routes.Handlers{
 		PostHandler:        postHandler,
@@ -137,11 +143,13 @@ func run() error {
 		DepartmentHandlers: deptHandler,
 		ApiHandlers:        apiHandler,
 		MenuHandlers:       menuHandler,
+		AudtiLogHandlers:   auditLogHandler,
 		BaseHandlers:       baseHandler,
 
 		AuthMiddleware:            authMiddleware,
 		RequestLoggerMiddleware:   reguestLoggerMiddleware,
 		RequestDebuggerMiddleware: requestDebuggerMiddleware,
+		AuditLogMiddleware:        auditLogMiddleware,
 	})
 	if err != nil {
 		return fmt.Errorf("configure routes: %w", err)
