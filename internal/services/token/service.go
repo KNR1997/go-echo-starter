@@ -10,8 +10,8 @@ import (
 )
 
 type JwtCustomClaims struct {
-	Name string `json:"name"`
-	ID   uint   `json:"id"`
+	Username string `json:"username"`
+	ID       uint   `json:"id"`
 	jwt.RegisteredClaims
 }
 
@@ -45,8 +45,8 @@ func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (acces
 	expiresAt := time.Now().Add(s.accessTokenDuration)
 
 	claims := &JwtCustomClaims{
-		Name: user.Name,
-		ID:   user.ID,
+		Username: user.Username,
+		ID:       user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
